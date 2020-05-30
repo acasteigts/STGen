@@ -13,15 +13,25 @@ genpairs(n::Int8) = [(i,j) for i::Int8 in 1:n-1 for j::Int8 in i+1:n]
 
 include("automorphisms.jl")
 
-function add_edge(g::TGraph, u::Int8, v::Int8, t::Int8)
-    push!(g.tedges, (u, v, t))
-	if t > g.tmax
-		g.tmax = t
-		empty!(g.vmax)
+function add_edges_new_time(g::TGraph, edges::Array{Tuple{Int8,Int8},1}, t::Int8)
+	g.tmax = t
+	empty!(g.vmax)
+	for (u, v) in edges
+		push!(g.tedges, (u, v, t))
+		push!(g.vmax, u, v)
+		filter!(e->e≠(u, v), g.nedges)
 	end
-	push!(g.vmax, u, v)
-	filter!(e->e≠(u, v), g.nedges)
 end
+
+# function add_edge(g::TGraph, u::Int8, v::Int8, t::Int8)
+#     push!(g.tedges, (u, v, t))
+# 	if t > g.tmax
+# 		g.tmax = t
+# 		empty!(g.vmax)
+# 	end
+# 	push!(g.vmax, u, v)
+# 	filter!(e->e≠(u, v), g.nedges)
+# end
 
 function neighbors_dict(g::TGraph)
 	neighbors = [Dict{Int8,Int8}() for _ in 1:g.n]
@@ -137,9 +147,10 @@ function extensions(g::TGraph)
 	succ = TGraph[]
 	for matching in matchings
 		h = TGraph(g)
-		for (u, v) in matching
-			add_edge(h, u, v, t)
-		end
+		# for (u, v) in matching
+		# 	add_edge(h, u, v, t)
+		# end
+		add_edges_new_time(h, matching, t)
 		push!(succ, h)
 	end
 	return succ
