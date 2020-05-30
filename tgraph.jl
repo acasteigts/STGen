@@ -150,15 +150,15 @@ function extensions(g::TGraph)
 		end
 	end
 	t = Int8(g.tmax + 1)
-	succ = TGraph[]
-	for matching in matchings
+	succ = Array{TGraph, 1}(undef, length(matchings))
+	for i in 1:length(matchings)
 		h = TGraph(g)
 		h.rigid = rigid
 		# for (u, v) in matching
 		# 	add_edge(h, u, v, t)
 		# end
-		add_edges_new_time(h, matching, t)
-		push!(succ, h)
+		add_edges_new_time(h, matchings[i], t)
+		succ[i] = h
 	end
 	return succ
 end
