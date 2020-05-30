@@ -137,16 +137,23 @@ end
 
 
 function extensions(g::TGraph)
-	gens = aut_gens(g)
-	if isempty(gens)
+	rigid = g.rigid
+	if rigid
 		matchings = get_matchings_rigid(g)
 	else
-		matchings = get_matchings_aut(g, gens)
+		gens = automorphism_group(g)
+		rigid = isempty(gens)
+		if rigid
+			matchings = get_matchings_rigid(g)
+		else
+			matchings = get_matchings_aut(g, gens)
+		end
 	end
 	t = Int8(g.tmax + 1)
 	succ = TGraph[]
 	for matching in matchings
 		h = TGraph(g)
+		h.rigid = rigid
 		# for (u, v) in matching
 		# 	add_edge(h, u, v, t)
 		# end

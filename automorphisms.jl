@@ -200,12 +200,3 @@ function automorphism_group(g::TGraph)
 	end
     return gens
 end
-
-function aut_gens(g::TGraph)
-	if g.rigid
-		return Array{Array{Int8,1},1}()
-	end
-	gens = automorphism_group(g)
-	g.rigid = isempty(gens)
-	return gens
-end
