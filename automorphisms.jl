@@ -79,7 +79,6 @@ function extend_matchings_aut(g::TGraph, init_orbits, matchings)
 		vavoid = Set{Int8}()
 		add_edges_new_time(h, m, t)
 		for e in m
-			# add_edge(h, e[1], e[2], t)
 			push!(vavoid, e[1], e[2])
 		end
 

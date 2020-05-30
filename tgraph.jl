@@ -154,9 +154,6 @@ function extensions(g::TGraph)
 	for i in 1:length(matchings)
 		h = TGraph(g)
 		h.rigid = rigid
-		# for (u, v) in matching
-		# 	add_edge(h, u, v, t)
-		# end
 		add_edges_new_time(h, matchings[i], t)
 		succ[i] = h
 	end
