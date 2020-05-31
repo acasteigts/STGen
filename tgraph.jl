@@ -1,17 +1,44 @@
-mutable struct TGraph
+struct TGraph
 	n::Int8
 	tmax::Int8
 	tedges::Array{Tuple{Int8,Int8,Int8},1}
 	nedges::Array{Tuple{Int8,Int8},1}
 	vmax::Array{Int8,1}
 	rigid::Bool
-	TGraph(n::Int8) = new(n, 0, [], genpairs(n), collect(1:n), false)
+	TGraph(n::Int8, tmax=0, tedges=[], nedges=genpairs(n), vmax=collect(1:n), rigid=false) = new(n, tmax, tedges, nedges, vmax, rigid)
 	TGraph(g::TGraph) = new(g.n, g.tmax, copy(g.tedges), copy(g.nedges), Int8[], g.rigid)
 end
 
 genpairs(n::Int8) = [(i,j) for i::Int8 in 1:n-1 for j::Int8 in i+1:n]
 
 include("automorphisms.jl")
+
+# UGLY BUT QUITE FASTER TODO add reference impl
+function construct_from(g::TGraph, new_edges::Array{Tuple{Int8,Int8},1}, t::Int8, rigid = g.rigid)
+	m = length(g.tedges)
+	k = length(new_edges)
+	time_edges = Array{Tuple{Int8,Int8,Int8}, 1}(undef, m + k)
+	for i in 1:m
+		time_edges[i] = g.tedges[i]
+	end
+	non_edges = Array{Tuple{Int8,Int8}, 1}(undef, length(g.nedges) - k)
+	j = 1
+	for i in 1:length(g.nedges)
+		(u, v) = g.nedges[i]
+		if !((u, v) in new_edges)
+			non_edges[j] = (u, v)
+			j += 1
+		end
+	end
+	vmax = Array{Int8, 1}(undef, k*2)
+	for i in 1:k
+		(u, v) = new_edges[i]
+		time_edges[m + i] = (u, v, t)
+		vmax[2*i-1] = u
+		vmax[2*i] = v
+	end
+	return TGraph(g.n, t, time_edges, non_edges, vmax, rigid)
+end
 
 function add_edges_new_time(g::TGraph, edges::Array{Tuple{Int8,Int8},1}, t::Int8)
 	g.tmax = t
@@ -152,9 +179,7 @@ function extensions(g::TGraph)
 	t = Int8(g.tmax + 1)
 	succ = Array{TGraph, 1}(undef, length(matchings))
 	for i in 1:length(matchings)
-		h = TGraph(g)
-		h.rigid = rigid
-		add_edges_new_time(h, matchings[i], t)
+		h = construct_from(g, matchings[i], t, rigid)
 		succ[i] = h
 	end
 	return succ

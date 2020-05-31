@@ -74,10 +74,11 @@ function extend_matchings_aut(g::TGraph, init_orbits, matchings)
 	end
 
 	for m in matchings
-		h = TGraph(g)
 		t = Int8(g.tmax + 1)
+		h = construct_from(g, m, t, false)
+		# h = TGraph(g)
+		# add_edges_new_time(h, m, t)
 		vavoid = Set{Int8}()
-		add_edges_new_time(h, m, t)
 		for e in m
 			push!(vavoid, e[1], e[2])
 		end
