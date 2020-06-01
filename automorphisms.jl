@@ -60,7 +60,7 @@ function orbit_of_edge(e, orbits)
 end
 
 function extend_matchings_aut(g::TGraph, init_orbits, matchings)
-	output = Array{Tuple{Int8,Int8}, 1}[]
+	output = Vector{Tuple{Int8,Int8}}[]
 	if isempty(matchings)
 		for orbit in init_orbits
 			e = orbit[1]
@@ -96,7 +96,7 @@ end
 
 function find_gens_intra_comp(neighbors, comp) # restricted to given component
     n = length(neighbors)
-    perms = Array{Array{Int8, 1}, 1}() # generators for this component, trivially extended to V
+    perms = Vector{Vector{Int8}}() # generators for this component, trivially extended to V
     u, tail = Iterators.peel(comp)
     for v in tail
         perm = fill(Int8(-1), n)
@@ -118,7 +118,7 @@ end
 
 function find_gens_inter_comp(neighbors, comps)
     n = length(neighbors)
-    perms = Array{Array{Int8, 1}, 1}()
+    perms = Vector{Vector{Int8}}()
     for i in 1:(length(comps)-1)
         u = comps[i][1]
         for j in (i + 1):length(comps)
@@ -184,7 +184,7 @@ end
 function automorphism_group(g::TGraph)
     neighbors = neighbors_dict(g)
     components = get_components(g)
-    gens = Array{Array{Int8,1},1}()
+    gens = Vector{Vector{Int8}}()
     for comp in components
         append!(gens, find_gens_intra_comp(neighbors, comp))
 	end

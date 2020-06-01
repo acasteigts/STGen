@@ -107,7 +107,7 @@ function gen_par(n, check::Bool = false)
 	Random.seed!(0)
 	bra = branches(n)
 	if n == 7
-		bra = bra[1:20]
+		bra = bra[1:280]
 	end
 	if check
 		results = @showprogress 1 "Computing..." pmap(exploreDFS_check, bra)

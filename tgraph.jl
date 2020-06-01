@@ -1,9 +1,9 @@
 struct TGraph
 	n::Int8
 	tmax::Int8
-	tedges::Array{Tuple{Int8,Int8,Int8},1}
-	nedges::Array{Tuple{Int8,Int8},1}
-	vmax::Array{Int8,1}
+	tedges::Vector{Tuple{Int8,Int8,Int8}}
+	nedges::Vector{Tuple{Int8,Int8}}
+	vmax::Vector{Int8}
 	rigid::Bool
 	TGraph(n::Int8, tmax=0, tedges=[], nedges=genpairs(n), vmax=collect(1:n), rigid=false) = new(n, tmax, tedges, nedges, vmax, rigid)
 	# TGraph(g::TGraph) = new(g.n, g.tmax, copy(g.tedges), copy(g.nedges), Int8[], g.rigid)
@@ -14,7 +14,7 @@ genpairs(n::Int8) = [(i,j) for i::Int8 in 1:n-1 for j::Int8 in i+1:n]
 include("automorphisms.jl")
 
 # Reference implementation for information, not used (see construct_from())
-function construct_from_ref(g::TGraph, new_edges::Array{Tuple{Int8,Int8},1}, t::Int8, rigid = g.rigid)
+function construct_from_ref(g::TGraph, new_edges::Vector{Tuple{Int8,Int8}}, t::Int8, rigid = g.rigid)
 	time_edges = copy(g.tedges)
 	non_edges = copy(g.nedges)
 	vmax = Int8[]
@@ -27,14 +27,14 @@ function construct_from_ref(g::TGraph, new_edges::Array{Tuple{Int8,Int8},1}, t::
 end
 
 # UGLY BUT FASTER
-function construct_from(g::TGraph, new_edges::Array{Tuple{Int8,Int8},1}, t::Int8, rigid = g.rigid)
+function construct_from(g::TGraph, new_edges::Vector{Tuple{Int8,Int8}}, t::Int8, rigid = g.rigid)
 	m = length(g.tedges)
 	k = length(new_edges)
-	time_edges = Array{Tuple{Int8,Int8,Int8}, 1}(undef, m + k)
+	time_edges = Vector{Tuple{Int8,Int8,Int8}}(undef, m + k)
 	for i in 1:m
 		time_edges[i] = g.tedges[i]
 	end
-	non_edges = Array{Tuple{Int8,Int8}, 1}(undef, length(g.nedges) - k)
+	non_edges = Vector{Tuple{Int8,Int8}}(undef, length(g.nedges) - k)
 	j = 1
 	for i in 1:length(g.nedges)
 		(u, v) = g.nedges[i]
@@ -43,7 +43,7 @@ function construct_from(g::TGraph, new_edges::Array{Tuple{Int8,Int8},1}, t::Int8
 			j += 1
 		end
 	end
-	vmax = Array{Int8, 1}(undef, k*2)
+	vmax = Vector{Int8}(undef, k*2)
 	for i in 1:k
 		(u, v) = new_edges[i]
 		time_edges[m + i] = (u, v, t)
@@ -53,7 +53,7 @@ function construct_from(g::TGraph, new_edges::Array{Tuple{Int8,Int8},1}, t::Int8
 	return TGraph(g.n, t, time_edges, non_edges, vmax, rigid)
 end
 
-function add_edges_new_time(g::TGraph, edges::Array{Tuple{Int8,Int8},1}, t::Int8)
+function add_edges_new_time(g::TGraph, edges::Vector{Tuple{Int8,Int8}}, t::Int8)
 	g.tmax = t
 	empty!(g.vmax)
 	for (u, v) in edges
@@ -75,7 +75,7 @@ end
 
 function neighbors_dict(g::TGraph)
 	neighbors = [Dict{Int8,Int8}() for _ in 1:g.n]
-	for (u,v,t) in g.tedges::Array{Tuple{Int8,Int8,Int8},1}
+	for (u,v,t) in g.tedges::Vector{Tuple{Int8,Int8,Int8}}
 		neighbors[u][t] = v
 		neighbors[v][t] = u
 	end
@@ -118,7 +118,7 @@ function get_components(g::TGraph)
 		end
 	end
 	# return unique!(comps) # Ref impl (slower than the following loop)
-	final = Array{Array{Int8,1},1}()
+	final = Vector{Vector{Int8}}()
 	for comp in comps
 		if ! (comp in final)
 			push!(final, comp)
@@ -131,17 +131,17 @@ function are_adjacent(e::Tuple{Int8,Int8}, f::Tuple{Int8,Int8})
 	return e[1]==f[1] || e[1]==f[2] || e[2]==f[1] || e[2]==f[2]
 end
 
-function valid_subsets(lst::Array{Tuple{Int8,Int8},1})::Array{Array{Tuple{Int8,Int8}, 1}, 1}
+function valid_subsets(lst::Vector{Tuple{Int8,Int8}})::Vector{Vector{Tuple{Int8,Int8}}}
     if length(lst) == 0
         return [Tuple{Int8, Int8}[]]
 	end
     if length(lst) == 1
-    	return [Tuple{Int8,Int8}[lst[1]],Tuple{Int8,Int8}[]]
+    	return [[lst[1]],Tuple{Int8,Int8}[]]
 	end
 	head = popfirst!(lst)
-	non_adjacent = [e for e in lst if !are_adjacent(head, e)]
+	non_adjacent = filter(e -> !are_adjacent(head, e), lst)
 	subsets = valid_subsets(non_adjacent)
-	with_it = Array{Array{Tuple{Int8,Int8}, 1}, 1}(undef, length(subsets))
+	with_it = Vector{Vector{Tuple{Int8,Int8}}}(undef, length(subsets))
 	head_tab = [head]
     for i in 1:length(subsets)
 		with_it[i] = [head_tab; subsets[i]]
@@ -159,8 +159,8 @@ end
 
 
 function get_matchings_aut(g::TGraph, gens)
-	matchings = Array{Tuple{Int8,Int8}, 1}[]
-	nmatchings = Array{Tuple{Int8,Int8}, 1}[]
+	matchings = Vector{Tuple{Int8,Int8}}[]
+	nmatchings = Vector{Tuple{Int8,Int8}}[]
 	init_orbits = edge_orbits(g, gens)
 	for i in 1:Int8(floor(g.n / 2))
 		nmatchings = extend_matchings_aut(g, init_orbits, nmatchings)
@@ -188,7 +188,7 @@ function extensions(g::TGraph)
 		end
 	end
 	t = Int8(g.tmax + 1)
-	succ = Array{TGraph, 1}(undef, length(matchings))
+	succ = Vector{TGraph}(undef, length(matchings))
 	for i in 1:length(matchings)
 		h = construct_from(g, matchings[i], t, rigid)
 		succ[i] = h
