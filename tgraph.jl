@@ -139,6 +139,7 @@ function valid_subsets(lst::Vector{Tuple{Int8,Int8}})::Vector{Vector{Tuple{Int8,
     	return [[lst[1]],Tuple{Int8,Int8}[]]
 	end
 	head = popfirst!(lst)
+	# non_adjacent = (e for e in lst if !are_adjacent(head, e))
 	non_adjacent = filter(e -> !are_adjacent(head, e), lst)
 	subsets = valid_subsets(non_adjacent)
 	with_it = Vector{Vector{Tuple{Int8,Int8}}}(undef, length(subsets))
@@ -150,7 +151,9 @@ function valid_subsets(lst::Vector{Tuple{Int8,Int8}})::Vector{Vector{Tuple{Int8,
 	return res
 end
 
+# TODO Switch to generators?
 function get_matchings_rigid(g::TGraph)
+	# edges = [e for e in g.nedges if e[1] in g.vmax || e[2] in g.vmax]
 	edges = filter(e -> e[1] in g.vmax || e[2] in g.vmax, g.nedges)
 	res = valid_subsets(edges)
 	pop!(res)
