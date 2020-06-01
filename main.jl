@@ -72,8 +72,7 @@ function branches(n, limit=Inf)
 		for i in 1:length(branches)
 			s = branches[i]
 			if length(s.tedges) < depth
-				deleteat!(branches, i)
-	        	append!(branches, extensions(s))
+				splice!(branches, i, extensions(s))
 				ok = false
 				break
 			end
@@ -104,11 +103,11 @@ end
 using Distributed
 using ProgressMeter
 
-function gen_par_pmap(n, check::Bool = false)
+function gen_par(n, check::Bool = false)
 	Random.seed!(0)
 	bra = branches(n)
 	if n == 7
-		bra = bra[1:280]
+		bra = bra[1:20]
 	end
 	if check
 		results = @showprogress 1 "Computing..." pmap(exploreDFS_check, bra)

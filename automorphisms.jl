@@ -76,20 +76,13 @@ function extend_matchings_aut(g::TGraph, init_orbits, matchings)
 	for m in matchings
 		t = Int8(g.tmax + 1)
 		h = construct_from(g, m, t, false)
-		# h = TGraph(g)
-		# add_edges_new_time(h, m, t)
-		vavoid = Set{Int8}()
-		for e in m
-			push!(vavoid, e[1], e[2])
-		end
-
 		gens = automorphism_group(h)
 		orbits = edge_orbits(h, gens)
 		for orbit in orbits
 			e = orbit[1]
 			if e in g.nedges
 				if e[1] in g.vmax || e[2] in g.vmax
-					if ! (e[1] in vavoid) && ! (e[2] in vavoid)
+					if ! (e[1] in h.vmax) && ! (e[2] in h.vmax)
 						if orbit_of_edge(e, init_orbits) >= orbit_of_edge(m[end], init_orbits)
 							push!(output, vcat(m, [e]))
 						end

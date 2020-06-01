@@ -6,14 +6,27 @@ struct TGraph
 	vmax::Array{Int8,1}
 	rigid::Bool
 	TGraph(n::Int8, tmax=0, tedges=[], nedges=genpairs(n), vmax=collect(1:n), rigid=false) = new(n, tmax, tedges, nedges, vmax, rigid)
-	TGraph(g::TGraph) = new(g.n, g.tmax, copy(g.tedges), copy(g.nedges), Int8[], g.rigid)
+	# TGraph(g::TGraph) = new(g.n, g.tmax, copy(g.tedges), copy(g.nedges), Int8[], g.rigid)
 end
 
 genpairs(n::Int8) = [(i,j) for i::Int8 in 1:n-1 for j::Int8 in i+1:n]
 
 include("automorphisms.jl")
 
-# UGLY BUT QUITE FASTER TODO add reference impl
+# Reference implementation for information, not used (see construct_from())
+function construct_from_ref(g::TGraph, new_edges::Array{Tuple{Int8,Int8},1}, t::Int8, rigid = g.rigid)
+	time_edges = copy(g.tedges)
+	non_edges = copy(g.nedges)
+	vmax = Int8[]
+	for (u, v) in new_edges
+		push!(time_edges, (u, v, t))
+		push!(vmax, u, v)
+		filter!(e->e≠(u, v), non_edges)
+	end
+	return TGraph(g.n, t, time_edges, non_edges, vmax, rigid)
+end
+
+# UGLY BUT FASTER
 function construct_from(g::TGraph, new_edges::Array{Tuple{Int8,Int8},1}, t::Int8, rigid = g.rigid)
 	m = length(g.tedges)
 	k = length(new_edges)
@@ -95,19 +108,20 @@ end
 
 function get_components(g::TGraph)
 	# faster than union-find
-	comp = [[u] for u::Int8 in 1:g.n]
+	comps = [[u] for u::Int8 in 1:g.n]
 	for (u, v, t) in g.tedges
-		if comp[u] != comp[v]
-			append!(comp[u],comp[v])
-			for w in comp[v]
-				comp[w] = comp[u]
+		if comps[u] != comps[v]
+			append!(comps[u],comps[v])
+			for w in comps[v]
+				comps[w] = comps[u]
 			end
 		end
 	end
+	# return unique!(comps) # Ref impl (slower than the following loop)
 	final = Array{Array{Int8,1},1}()
-	for c1 in comp
-		if ! (c1 in final)
-			push!(final,c1)
+	for comp in comps
+		if ! (comp in final)
+			push!(final, comp)
 		end
 	end
 	return final
@@ -119,30 +133,27 @@ end
 
 function valid_subsets(lst::Array{Tuple{Int8,Int8},1})::Array{Array{Tuple{Int8,Int8}, 1}, 1}
     if length(lst) == 0
-		res = Array{Tuple{Int8,Int8}, 1}[]
-		push!(res, Tuple{Int8,Int8}[])
-        return res
+        return [Tuple{Int8, Int8}[]]
 	end
     if length(lst) == 1
-		res = [Tuple{Int8,Int8}[lst[1]],Tuple{Int8,Int8}[]]
-    	return res
+    	return [Tuple{Int8,Int8}[lst[1]],Tuple{Int8,Int8}[]]
 	end
 	head = popfirst!(lst)
-    with_it = Array{Tuple{Int8,Int8}, 1}[]
 	non_adjacent = [e for e in lst if !are_adjacent(head, e)]
 	subsets = valid_subsets(non_adjacent)
-    for s in subsets
-		append!(with_it, [vcat([head], s)])
+	with_it = Array{Array{Tuple{Int8,Int8}, 1}, 1}(undef, length(subsets))
+	head_tab = [head]
+    for i in 1:length(subsets)
+		with_it[i] = [head_tab; subsets[i]]
 	end
-    res = vcat(with_it, valid_subsets(lst))
+    res = [with_it; valid_subsets(lst)]
 	return res
 end
 
 function get_matchings_rigid(g::TGraph)
-	vt = g.vmax
-	edges = [(u, v) for (u, v) in g.nedges if u in vt || v in vt]
+	edges = filter(e -> e[1] in g.vmax || e[2] in g.vmax, g.nedges)
 	res = valid_subsets(edges)
-	splice!(res,length(res))
+	pop!(res)
 	return res
 end
 
