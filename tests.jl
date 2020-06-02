@@ -31,3 +31,14 @@ function test2()
 		# anything
 	end
 end
+
+
+function test_iter(n::Int)
+	nb_graphs = 0
+	for g in TGraph(n)
+		if isclique(g)
+			nb_graphs += 1
+		end
+	end
+	println(nb_graphs)
+end

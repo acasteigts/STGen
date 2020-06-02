@@ -1,4 +1,5 @@
-include("tgraphs.jl")
+include("tgraph.jl")
+using DataStructures
 
 function are_adjacent(e::Tuple{Int8,Int8}, f::Tuple{Int8,Int8})
 	return e[1]==f[1] || e[1]==f[2] || e[2]==f[1] || e[2]==f[2]
@@ -23,11 +24,49 @@ function valid_subsets(lst::Vector{Tuple{Int8,Int8}})::Vector{Vector{Tuple{Int8,
 	return res
 end
 
+function toto()
+	iter = (i for i in 1:10 if iseven(i))
+	next = iterate(iter)
+	while next !== nothing
+	    (i, state) = next
+	    @show i
+	    next = iterate(iter, state)
+	end
+end
+
+# TODO LALA DEBUGUER FIRSTREST
+function valid_subsets_iter(lst)::Vector{Vector{Tuple{Int8,Int8}}}
+	try
+		(head, state) = iterate(lst)
+	catch
+        return [Tuple{Int8, Int8}[]]
+	end
+	println(typeof(head))
+	non_adjacent = (e for e in tail if !are_adjacent(head, e))
+	subsets = valid_subsets_iter(non_adjacent)
+	with_it = Vector{Vector{Tuple{Int8,Int8}}}(undef, length(subsets))
+	head_tab = [head]
+    for i in 1:length(subsets)
+		with_it[i] = [head_tab; subsets[i]]
+	end
+    res = [with_it; valid_subsets_iter(tail)]
+	return res
+end
+
 function get_matchings_rigid(g::TGraph)
 	edges = filter(e -> e[1] in g.vmax || e[2] in g.vmax, g.nedges)
 	res = valid_subsets(edges)
 	pop!(res)
 	return res
+	# edges = (e for e in g.nedges if e[1] in g.vmax || e[2] in g.vmax)
+	# try
+	# 	Iterators.peel(edges)
+	# 	res = valid_subsets_iter(edges)
+	# 	pop!(res)
+	# 	return res
+	# catch
+	# 	return Vector{Vector{Tuple{Int8,Int8}}}()
+	# end
 end
 
 
@@ -61,9 +100,58 @@ function extensions(g::TGraph)
 		end
 	end
 	succ = Vector{TGraph}(undef, length(matchings))
+	t = Int8(g.tmax + 1)
 	for i in 1:length(matchings)
-		h = construct_from(g, matchings[i], rigid)
+		h = construct_from(g, matchings[i], t, rigid)
 		succ[i] = h
 	end
 	return succ
+end
+
+function Base.iterate(g::TGraph)
+	stack = Stack{TGraph}()
+	push!(stack, g)
+	return iterate(g, stack)
+end
+
+function Base.iterate(g::TGraph, stack)
+	if isempty(stack)
+		return
+	else
+		h = pop!(stack)
+		if length(h.nedges) > 0
+	        for s in extensions(h)
+				push!(stack, s)
+			end
+		end
+		return (h, stack)
+	end
+end
+
+using ResumableFunctions
+@resumable function temporal_cliques(g::TGraph)
+	stack = Stack{TGraph}()
+	push!(stack, g)
+    while !isempty(stack)
+		h = pop!(stack)
+        for s in extensions(h)
+            if isempty(s.nedges)
+            	@yield s
+            else
+				push!(stack, s)
+			end
+		end
+	end
+end
+
+temporal_cliques(n::Int64) = temporal_cliques(TGraph(n))
+
+function test_yield(n::Int64)
+	clique_number = 0
+	for g in Iterators.filter(isclique, TGraph(n)) # temporal_cliques(n)
+		#if isclique(g)
+			clique_number += 1
+		#end
+	end
+	println(clique_number)
 end

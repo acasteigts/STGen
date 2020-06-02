@@ -5,11 +5,13 @@ struct TGraph
 	nedges::Vector{Tuple{Int8,Int8}}
 	vmax::Vector{Int8}
 	rigid::Bool
-	TGraph(n::Int8, tmax=0, tedges=[], nedges=genpairs(n), vmax=collect(1:n), rigid=false) = new(n, tmax, tedges, nedges, vmax, rigid)
+	TGraph(n, tmax=0, tedges=[], nedges=genpairs(n), vmax=collect(1:n), rigid=false) = new(Int8(n), tmax, tedges, nedges, vmax, rigid)
 	# TGraph(g::TGraph) = new(g.n, g.tmax, copy(g.tedges), copy(g.nedges), Int8[], g.rigid)
 end
 
-genpairs(n::Int8) = [(i,j) for i::Int8 in 1:n-1 for j::Int8 in i+1:n]
+isclique(g::TGraph) = length(g.nedges) == 0
+
+genpairs(n) = [(i,j) for i::Int8 in 1:n-1 for j::Int8 in i+1:n]
 
 include("automorphisms.jl")
 
@@ -104,97 +106,4 @@ function predecessors(g::TGraph)
 		union!(preds[v], preds[u])
 	end
 	return preds
-end
-
-function get_components(g::TGraph)
-	# faster than union-find
-	comps = [[u] for u::Int8 in 1:g.n]
-	for (u, v, t) in g.tedges
-		if comps[u] != comps[v]
-			append!(comps[u],comps[v])
-			for w in comps[v]
-				comps[w] = comps[u]
-			end
-		end
-	end
-	# return unique!(comps) # Ref impl (slower than the following loop)
-	final = Vector{Vector{Int8}}()
-	for comp in comps
-		if ! (comp in final)
-			push!(final, comp)
-		end
-	end
-	return final
-end
-
-function are_adjacent(e::Tuple{Int8,Int8}, f::Tuple{Int8,Int8})
-	return e[1]==f[1] || e[1]==f[2] || e[2]==f[1] || e[2]==f[2]
-end
-
-function valid_subsets(lst::Vector{Tuple{Int8,Int8}})::Vector{Vector{Tuple{Int8,Int8}}}
-    if length(lst) == 0
-        return [Tuple{Int8, Int8}[]]
-	end
-    if length(lst) == 1
-    	return [[lst[1]],Tuple{Int8,Int8}[]]
-	end
-	head = popfirst!(lst)
-	# non_adjacent = (e for e in lst if !are_adjacent(head, e))
-	non_adjacent = filter(e -> !are_adjacent(head, e), lst)
-	subsets = valid_subsets(non_adjacent)
-	with_it = Vector{Vector{Tuple{Int8,Int8}}}(undef, length(subsets))
-	head_tab = [head]
-    for i in 1:length(subsets)
-		with_it[i] = [head_tab; subsets[i]]
-	end
-    res = [with_it; valid_subsets(lst)]
-	return res
-end
-
-# TODO Switch to generators?
-function get_matchings_rigid(g::TGraph)
-	# edges = [e for e in g.nedges if e[1] in g.vmax || e[2] in g.vmax]
-	edges = filter(e -> e[1] in g.vmax || e[2] in g.vmax, g.nedges)
-	res = valid_subsets(edges)
-	pop!(res)
-	return res
-end
-
-
-function get_matchings_aut(g::TGraph, gens)
-	matchings = Vector{Tuple{Int8,Int8}}[]
-	nmatchings = Vector{Tuple{Int8,Int8}}[]
-	init_orbits = edge_orbits(g, gens)
-	for i in 1:Int8(floor(g.n / 2))
-		nmatchings = extend_matchings_aut(g, init_orbits, nmatchings)
-		if !isempty(nmatchings)
-			append!(matchings, nmatchings)
-		else
-			break
-		end
-	end
-	return matchings
-end
-
-
-function extensions(g::TGraph)
-	rigid = g.rigid
-	if rigid
-		matchings = get_matchings_rigid(g)
-	else
-		gens = automorphism_group(g)
-		rigid = isempty(gens)
-		if rigid
-			matchings = get_matchings_rigid(g)
-		else
-			matchings = get_matchings_aut(g, gens)
-		end
-	end
-	t = Int8(g.tmax + 1)
-	succ = Vector{TGraph}(undef, length(matchings))
-	for i in 1:length(matchings)
-		h = construct_from(g, matchings[i], t, rigid)
-		succ[i] = h
-	end
-	return succ
 end

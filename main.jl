@@ -1,43 +1,7 @@
-try
-	g = TGraph(Int8(4))
-catch
-	include("tgraph.jl")
-end
+include("tgraph.jl")
+include("generation.jl")
 include("algorithms.jl")
 
-using DataStructures
-function Base.iterate(g::TGraph)
-	stack = Stack{TGraph}()
-	push!(stack, g)
-	return iterate(g, stack)
-end
-
-function Base.iterate(g::TGraph, stack)
-	if isempty(stack)
-		return
-	else
-		h = pop!(stack)
-		if length(h.nedges) > 0
-	        for s in extensions(h)
-				push!(stack, s)
-			end
-#			return iterate(h, stack)
-		end
-		return (h, stack)
-	end
-end
-
-function test_iter(n::Int)
-	nb_graphs = 0
-	for g in TGraph(Int8(n))
-		println(g)
-		break;
-		# if isempty(g.nedges)
-			nb_graphs += 1
-		# end
-	end
-	println(nb_graphs)
-end
 
 function exploreDFS_nocheck(g::TGraph)
 	stack = Stack{TGraph}()
