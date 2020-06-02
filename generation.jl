@@ -24,31 +24,9 @@ function valid_subsets(lst::Vector{Tuple{Int8,Int8}})::Vector{Vector{Tuple{Int8,
 	return res
 end
 
-function valid_subsets_iter(lst)::Vector{Vector{Tuple{Int8,Int8}}}
-	if iterate(lst) == nothing
-        return [Tuple{Int8, Int8}[]]
-	else
-		(head, tail) = Iterators.peel(lst)
-		if iterate(tail) == nothing
-			return [Tuple{Int8,Int8}[head],Tuple{Int8,Int8}[]]
-		end
-	end
-	non_adjacent = Iterators.filter(e -> !are_adjacent(head, e), tail)
-	subsets = valid_subsets_iter(non_adjacent)
-	with_it = Vector{Vector{Tuple{Int8,Int8}}}(undef, length(subsets))
-	head_tab = [head]
-    for i in 1:length(subsets)
-		with_it[i] = [head_tab; subsets[i]]
-	end
-    res = [with_it; valid_subsets_iter(tail)]
-	return res
-end
-
 function get_matchings_rigid(g::TGraph)
 	edges = filter(e -> e[1] in g.vmax || e[2] in g.vmax, g.nedges)
 	res = valid_subsets(edges)
-	# edges = (e for e in g.nedges if e[1] in g.vmax || e[2] in g.vmax)
-	# res = valid_subsets_iter(edges)
 	pop!(res)
 	return res
 end
