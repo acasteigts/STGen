@@ -24,25 +24,16 @@ function valid_subsets(lst::Vector{Tuple{Int8,Int8}})::Vector{Vector{Tuple{Int8,
 	return res
 end
 
-function toto()
-	iter = (i for i in 1:10 if iseven(i))
-	next = iterate(iter)
-	while next !== nothing
-	    (i, state) = next
-	    @show i
-	    next = iterate(iter, state)
-	end
-end
-
-# TODO LALA DEBUGUER FIRSTREST
 function valid_subsets_iter(lst)::Vector{Vector{Tuple{Int8,Int8}}}
-	try
-		(head, state) = iterate(lst)
-	catch
+	if iterate(lst) == nothing
         return [Tuple{Int8, Int8}[]]
+	else
+		(head, tail) = Iterators.peel(lst)
+		if iterate(tail) == nothing
+			return [Tuple{Int8,Int8}[head],Tuple{Int8,Int8}[]]
+		end
 	end
-	println(typeof(head))
-	non_adjacent = (e for e in tail if !are_adjacent(head, e))
+	non_adjacent = Iterators.filter(e -> !are_adjacent(head, e), tail)
 	subsets = valid_subsets_iter(non_adjacent)
 	with_it = Vector{Vector{Tuple{Int8,Int8}}}(undef, length(subsets))
 	head_tab = [head]
@@ -56,17 +47,10 @@ end
 function get_matchings_rigid(g::TGraph)
 	edges = filter(e -> e[1] in g.vmax || e[2] in g.vmax, g.nedges)
 	res = valid_subsets(edges)
+	# edges = (e for e in g.nedges if e[1] in g.vmax || e[2] in g.vmax)
+	# res = valid_subsets_iter(edges)
 	pop!(res)
 	return res
-	# edges = (e for e in g.nedges if e[1] in g.vmax || e[2] in g.vmax)
-	# try
-	# 	Iterators.peel(edges)
-	# 	res = valid_subsets_iter(edges)
-	# 	pop!(res)
-	# 	return res
-	# catch
-	# 	return Vector{Vector{Tuple{Int8,Int8}}}()
-	# end
 end
 
 
