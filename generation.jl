@@ -5,22 +5,58 @@ function are_adjacent(e::Tuple{Int8,Int8}, f::Tuple{Int8,Int8})
 	return e[1]==f[1] || e[1]==f[2] || e[2]==f[1] || e[2]==f[2]
 end
 
-function valid_subsets(lst::Vector{Tuple{Int8,Int8}})::Vector{Vector{Tuple{Int8,Int8}}}
-    if length(lst) == 0
+function valid_subsets(edges::Vector{Tuple{Int8,Int8}})::Vector{Vector{Tuple{Int8,Int8}}}
+    if isempty(edges)
         return [Tuple{Int8, Int8}[]]
+	elseif length(edges) == 1
+    	return [[edges[1]], Tuple{Int8,Int8}[]]
+	elseif length(edges) == 2
+		if are_adjacent(edges[1], edges[2])
+			return [[edges[1]], [edges[2]], Tuple{Int8,Int8}[]]
+		else
+			return [[edges[1]], [edges[2]], [edges[1], edges[2]], Tuple{Int8,Int8}[]]
+		end
+	# elseif length(edges) == 3
+	# 	e1, e2, e3 = edges[1], edges[2], edges[3]
+	# 	if are_adjacent(e1, e2)
+	# 		if are_adjacent(e1, e3)
+	# 			if are_adjacent(e2, e3)
+	# 				return [[e1], [e2], [e3], Tuple{Int8,Int8}[]]
+	# 			else
+	# 				return [[e1], [e2], [e3], [e2, e3], Tuple{Int8,Int8}[]]
+	# 			end
+	# 		else
+	# 			if are_adjacent(e2, e3)
+	# 				return [[e1], [e2], [e3], [e1, e3], Tuple{Int8,Int8}[]]
+	# 			else
+	# 				return [[e1], [e2], [e3], [e1, e3], [e2, e3], Tuple{Int8,Int8}[]]
+	# 			end
+	# 		end
+	# 	else
+	# 		if are_adjacent(e1, e3)
+	# 			if are_adjacent(e2, e3)
+	# 				return [[e1], [e2], [e3], [e1, e2], Tuple{Int8,Int8}[]]
+	# 			else
+	# 				return [[e1], [e2], [e3], [e1, e2], [e2, e3], Tuple{Int8,Int8}[]]
+	# 			end
+	# 		else
+	# 			if are_adjacent(e2, e3)
+	# 				return [[e1], [e2], [e3], [e1, e2], [e1, e3], Tuple{Int8,Int8}[]]
+	# 			else
+	# 				return [[e1], [e2], [e3], [e1, e2], [e1, e3], [e2, e3], [e1, e2, e3], Tuple{Int8,Int8}[]]
+	# 			end
+	# 		end
+	# 	end
 	end
-    if length(lst) == 1
-    	return [[lst[1]],Tuple{Int8,Int8}[]]
-	end
-	head = popfirst!(lst)
-	non_adjacent = filter(e -> !are_adjacent(head, e), lst)
+	head = popfirst!(edges)
+	non_adjacent = filter(e -> !are_adjacent(head, e), edges)
 	subsets = valid_subsets(non_adjacent)
 	with_it = Vector{Vector{Tuple{Int8,Int8}}}(undef, length(subsets))
 	head_tab = [head]
     for i in 1:length(subsets)
 		with_it[i] = [head_tab; subsets[i]]
 	end
-    res = [with_it; valid_subsets(lst)]
+    res = [with_it; valid_subsets(edges)]
 	return res
 end
 
