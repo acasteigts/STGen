@@ -25,7 +25,8 @@ function valid_subsets(edges::Vector{Tuple{Int8,Int8}})::Vector{Vector{Tuple{Int
     for i in 1:length(subsets)
 		with_it[i] = [head_tab; subsets[i]]
 	end
-    res = [with_it; valid_subsets(edges)]
+	without_it = valid_subsets(edges)
+    res = [with_it; without_it]
 	return res
 end
 
