@@ -3,33 +3,25 @@ include("generation.jl")
 include("algorithms.jl")
 
 
-function exploreDFS_nocheck(g::TGraph)
-	stack = Stack{TGraph}()
-	push!(stack, g)
-	nb_cliques = 0
-    while !isempty(stack)
-		h = pop!(stack)
-        for s in extensions(h)
-            if isempty(s.nedges)
-            	nb_cliques += 1
-				println(to_string(s))
-            else
-				push!(stack, s)
-			end
+function count_from(root::TGraph, predicate::Function = isclique)
+	count = 0
+	for g in root # syntax equiv. descendants(root)
+        if predicate(g)
+			count += 1
 		end
 	end
-	return nb_cliques
+	return count
 end
 
-function exploreDFS_check(g::TGraph)
+function exploreDFS_check(root::TGraph)
 	stack = Stack{TGraph}()
-	push!(stack, g)
+	push!(stack, root)
 	nb_cliques = 0
     while !isempty(stack)
-		h = pop!(stack)
-        for s in extensions(h)
+		g = pop!(stack)
+        for s in extensions(g)
 			if select(s)
-	            if isempty(s.nedges)
+	            if isclique(s)
 					if !has_optimal_spanner(s, 100)
 	                	nb_cliques += 1
 					end
@@ -93,7 +85,7 @@ function gen(n, check::Bool = false)
 	if check
 		nb_cliques = exploreDFS_check(g)
 	else
-		nb_cliques = exploreDFS_nocheck(g)
+		nb_cliques = count_from(g, isclique)
 	end
 	println(nb_cliques, " cliques generated")
 end
