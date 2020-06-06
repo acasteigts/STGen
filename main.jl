@@ -3,35 +3,27 @@ include("generation.jl")
 include("algorithms.jl")
 
 
-function count_from(root::TGraph, predicate::Function = isclique)
+function count_cliques(root::TGraph)
 	count = 0
-	for g in root # syntax equiv. descendants(root)
-        if predicate(g)
+	for g in TGraphs(root)
+        if isclique(g)
 			count += 1
 		end
 	end
 	return count
 end
 
-function exploreDFS_check(root::TGraph)
-	stack = Stack{TGraph}()
-	push!(stack, root)
-	nb_cliques = 0
-    while !isempty(stack)
-		g = pop!(stack)
-        for s in extensions(g)
-			if select(s)
-	            if isclique(s)
-					if !has_optimal_spanner(s, 100)
-	                	nb_cliques += 1
-					end
-	            else
-					push!(stack, s)
-				end
-			end
+function check_spanners(root::TGraph)
+	for g in TGraphs(root, g -> select(g))
+        if isclique(g)
+			if !has_optimal_spanner(g, 1000)
+		        print("FAILING ON ")
+		        print(g.tedges)
+				return false
+		    end
 		end
 	end
-	return nb_cliques
+	return true
 end
 
 function select(g::TGraph)
@@ -81,13 +73,14 @@ end
 # SEQUENTIAL VERSION
 
 function gen(n, check::Bool = false)
-    g = TGraph(Int8(n))
+    root = TGraph(Int8(n))
 	if check
-		nb_cliques = exploreDFS_check(g)
+		always_admit = check_spanners(root)
+		@show always_admit
 	else
-		nb_cliques = count_from(g, isclique)
+		nb_cliques = count_cliques(root)
+		@show nb_cliques
 	end
-	println(nb_cliques, " cliques generated")
 end
 
 
@@ -104,10 +97,12 @@ function gen_par(n, check::Bool = false)
 		bra = bra[1:280]
 	end
 	if check
-		results = @showprogress 1 "Computing..." pmap(exploreDFS_check, bra)
+		results = @showprogress 1 "Computing..." pmap(check_spanners, bra)
+		always_admit = all(results)
+		@show always_admit
 	else
-		results = @showprogress 1 "Computing..." pmap(exploreDFS_nocheck, bra)
+		results = @showprogress 1 "Computing..." pmap(count_cliques, bra)
+		nb_cliques = sum(results)
+		@show nb_cliques
 	end
-	nb_cliques = sum(results)
-	println(nb_cliques)
 end

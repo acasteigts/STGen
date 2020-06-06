@@ -113,22 +113,45 @@ function extensions(g::TGraph)
 	return succ
 end
 
-function Base.iterate(g::TGraph)
-	stack = Stack{TGraph}()
-	push!(stack, g)
-	return iterate(g, stack)
+
+#######################################
+# ITERATORS
+
+struct TGraphs
+	root::TGraph
+	select_condition::Function
+	TGraphs(root::TGraph, select_condition = (g) -> true) = new(root, select_condition)
+	TGraphs(n::Int, select_condition = (g) -> true) = new(TGraph(n), select_condition)
 end
 
-function Base.iterate(g::TGraph, stack)
+function Base.iterate(graphs::TGraphs)
+	stack = Stack{TGraph}()
+	push!(stack, graphs.root)
+	return iterate(graphs, stack)
+end
+
+function Base.iterate(graphs::TGraphs, stack)
 	if isempty(stack)
 		return
 	else
-		h = pop!(stack)
-		if length(h.nedges) > 0
-	        for s in extensions(h)
-				push!(stack, s)
+		g = pop!(stack)
+		if length(g.nedges) > 0
+	        for s in extensions(g)
+				if graphs.select_condition(s)
+					push!(stack, s)
+				end
 			end
 		end
-		return (h, stack)
+		return (g, stack)
 	end
+end
+
+function testt()
+	c = 0
+	for g in TGraphs(6)
+		if isclique(g)
+			c += 1
+		end
+	end
+	println(c)
 end
