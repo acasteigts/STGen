@@ -1,4 +1,4 @@
-struct TGraph
+mutable struct TGraph
 	n::Int8
 	tmax::Int8
 	tedges::Vector{Tuple{Int8,Int8,Int8}}
@@ -65,15 +65,15 @@ function add_edges_new_time(g::TGraph, edges::Vector{Tuple{Int8,Int8}}, t::Int8)
 	end
 end
 
-# function add_edge(g::TGraph, u::Int8, v::Int8, t::Int8)
-#     push!(g.tedges, (u, v, t))
-# 	if t > g.tmax
-# 		g.tmax = t
-# 		empty!(g.vmax)
-# 	end
-# 	push!(g.vmax, u, v)
-# 	filter!(e->e≠(u, v), g.nedges)
-# end
+function add_edge(g::TGraph, u, v, t)
+    push!(g.tedges, (u, v, t))
+	if t > g.tmax
+		g.tmax = t
+		empty!(g.vmax)
+	end
+	push!(g.vmax, u, v)
+	filter!(e->e≠(u, v), g.nedges)
+end
 
 function neighbors_dict(g::TGraph)
 	neighbors = [Dict{Int8,Int8}() for _ in 1:g.n]

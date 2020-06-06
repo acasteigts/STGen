@@ -5,8 +5,8 @@ function are_adjacent(e::Tuple{Int8,Int8}, f::Tuple{Int8,Int8})
 	return e[1]==f[1] || e[1]==f[2] || e[2]==f[1] || e[2]==f[2]
 end
 
-function valid_subsets(edges::Vector{Tuple{Int8,Int8}})::Vector{Vector{Tuple{Int8,Int8}}}
-    if isempty(edges)
+function valid_subsets_small(edges::Vector{Tuple{Int8,Int8}})::Vector{Vector{Tuple{Int8,Int8}}}
+	if isempty(edges)
         return [Tuple{Int8, Int8}[]]
 	elseif length(edges) == 1
     	return [[edges[1]], Tuple{Int8,Int8}[]]
@@ -16,6 +16,43 @@ function valid_subsets(edges::Vector{Tuple{Int8,Int8}})::Vector{Vector{Tuple{Int
 		else
 			return [[edges[1]], [edges[2]], [edges[1], edges[2]], Tuple{Int8,Int8}[]]
 		end
+	elseif length(edges) == 3
+	 	e1, e2, e3 = edges[1], edges[2], edges[3]
+	 	if are_adjacent(e1, e2)
+	 		if are_adjacent(e1, e3)
+	 			if are_adjacent(e2, e3)
+	 				return [[e1], [e2], [e3], Tuple{Int8,Int8}[]]
+	 			else
+	 				return [[e1], [e2], [e3], [e2, e3], Tuple{Int8,Int8}[]]
+	 			end
+	 		else
+	 			if are_adjacent(e2, e3)
+	 				return [[e1], [e2], [e3], [e1, e3], Tuple{Int8,Int8}[]]
+	 			else
+	 				return [[e1], [e2], [e3], [e1, e3], [e2, e3], Tuple{Int8,Int8}[]]
+	 			end
+	 		end
+	 	else
+	 		if are_adjacent(e1, e3)
+	 			if are_adjacent(e2, e3)
+	 				return [[e1], [e2], [e3], [e1, e2], Tuple{Int8,Int8}[]]
+	 			else
+	 				return [[e1], [e2], [e3], [e1, e2], [e2, e3], Tuple{Int8,Int8}[]]
+	 			end
+	 		else
+	 			if are_adjacent(e2, e3)
+	 				return [[e1], [e2], [e3], [e1, e2], [e1, e3], Tuple{Int8,Int8}[]]
+	 			else
+	 				return [[e1], [e2], [e3], [e1, e2], [e1, e3], [e2, e3], [e1, e2, e3], Tuple{Int8,Int8}[]]
+	 			end
+	 		end
+	 	end
+	end
+end
+
+function valid_subsets(edges::Vector{Tuple{Int8,Int8}})::Vector{Vector{Tuple{Int8,Int8}}}
+	if length(edges) < 4
+		return valid_subsets_small(edges)
 	end
 	head = popfirst!(edges)
 	non_adjacent = filter(e -> !are_adjacent(head, e), edges)
@@ -114,12 +151,12 @@ end
 
 temporal_cliques(n::Int64) = temporal_cliques(TGraph(n))
 
-function test_yield(n::Int64)
+function test_iter(n::Int64)
 	clique_number = 0
-	for g in Iterators.filter(isclique, TGraph(n)) # temporal_cliques(n)
-		#if isclique(g)
+	for g in TGraph(n)
+		if isclique(g)
 			clique_number += 1
-		#end
+		end
 	end
 	println(clique_number)
 end

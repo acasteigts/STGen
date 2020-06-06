@@ -12,6 +12,7 @@ function exploreDFS_nocheck(g::TGraph)
         for s in extensions(h)
             if isempty(s.nedges)
             	nb_cliques += 1
+				println(to_string(s))
             else
 				push!(stack, s)
 			end
