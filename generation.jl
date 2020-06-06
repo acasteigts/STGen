@@ -132,31 +132,3 @@ function Base.iterate(g::TGraph, stack)
 		return (h, stack)
 	end
 end
-
-using ResumableFunctions
-@resumable function temporal_cliques(g::TGraph)
-	stack = Stack{TGraph}()
-	push!(stack, g)
-    while !isempty(stack)
-		h = pop!(stack)
-        for s in extensions(h)
-            if isempty(s.nedges)
-            	@yield s
-            else
-				push!(stack, s)
-			end
-		end
-	end
-end
-
-temporal_cliques(n::Int64) = temporal_cliques(TGraph(n))
-
-function test_iter(n::Int64)
-	clique_number = 0
-	for g in TGraph(n)
-		if isclique(g)
-			clique_number += 1
-		end
-	end
-	println(clique_number)
-end
