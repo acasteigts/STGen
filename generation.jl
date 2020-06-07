@@ -67,6 +67,7 @@ function valid_subsets(edges::Vector{Tuple{Int8,Int8}})::Vector{Vector{Tuple{Int
 	return res
 end
 
+
 function get_matchings_rigid(g::TGraph)
 	edges = filter(e -> e[1] in g.vmax || e[2] in g.vmax, g.nedges)
 	res = valid_subsets(edges)
@@ -91,6 +92,16 @@ function get_matchings_aut(g::TGraph, gens)
 end
 
 
+# At least one edge must be selected in each component
+function filter_dead_end(m::Vector{Tuple{Int8, Int8}}, components::Vector{Vector{Int8}})
+    if length(m) < length(components)
+        return false
+	end
+    vertices = collect(Iterators.flatten(m))
+	return all(!isempty(intersect(vertices, comp)) for comp in components)
+end
+
+
 function extensions(g::TGraph)
 	rigid = g.rigid
 	if rigid
@@ -104,6 +115,16 @@ function extensions(g::TGraph)
 			matchings = get_matchings_aut(g, gens)
 		end
 	end
+
+    # The following is only relevant for generating cliques with n >= 8
+    if g.n >= 5
+        noncomponents = get_noncomponents(g)
+		nb_noncomp = length(noncomponents)
+        if nb_noncomp > 1
+			filter!(m -> filter_dead_end(m, noncomponents), matchings)
+		end
+	end
+
 	succ = Vector{TGraph}(undef, length(matchings))
 	t = Int8(g.tmax + 1)
 	for i in 1:length(matchings)
