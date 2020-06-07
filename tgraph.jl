@@ -9,7 +9,7 @@ mutable struct TGraph
 	# TGraph(g::TGraph) = new(g.n, g.tmax, copy(g.tedges), copy(g.nedges), Int8[], g.rigid)
 end
 
-isclique(g::TGraph) = length(g.nedges) == 0
+isclique(g::TGraph) = length(g.tedges) == (g.n * (g.n - 1))/2
 
 genpairs(n) = [(i,j) for i::Int8 in 1:n-1 for j::Int8 in i+1:n]
 
@@ -76,7 +76,26 @@ function add_edge(g::TGraph, u, v, t)
 end
 
 function non_edges(g)
-	return g.nedges
+	edges = [(u, v) for (u, v, _) in g.tedges]
+	sort!(edges)
+	size = Int((g.n * (g.n - 1)) / 2 - length(edges))
+	nedges = Vector{Tuple{Int8, Int8}}(undef, size)
+	if size == 0
+		return nedges
+	end
+	pairs = genpairs(g.n)
+	i = j = k = 1
+	while k <= length(nedges)
+		while edges[j] > pairs[i]
+			nedges[k] = pairs[i]
+			i += 1
+			k += 1
+		end
+		while edges[j] <= pairs[i]
+			j += 1
+		end
+	end
+	return nedges
 end
 
 function neighbors_dict(g::TGraph)
