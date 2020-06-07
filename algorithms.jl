@@ -116,10 +116,6 @@ end
 using Random
 Random.seed!(0)
 
-function is_tc(g)
-    return all(length(p) == g.n for p in predecessors(g))
-end
-
 function is_tc_without(n, edges, e)
     if length(edges) < 2*n - 3
         return false

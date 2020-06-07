@@ -1,4 +1,5 @@
 include("tgraph.jl")
+include("automorphisms.jl")
 using DataStructures
 
 function are_adjacent(e::Tuple{Int8,Int8}, f::Tuple{Int8,Int8})
@@ -69,7 +70,7 @@ end
 
 
 function get_matchings_rigid(g::TGraph)
-	edges = filter(e -> e[1] in g.vmax || e[2] in g.vmax, g.nedges)
+	edges = filter(e -> e[1] in g.vmax || e[2] in g.vmax, non_edges(g))
 	res = valid_subsets(edges)
 	pop!(res)
 	return res
@@ -137,7 +138,7 @@ function Base.iterate(graphs::TGraphs, stack)
 		return
 	else
 		g = pop!(stack)
-		if length(g.nedges) > 0
+		if !isclique(g)
 	        for s in extensions(g)
 				if graphs.select_condition(s)
 					push!(stack, s)

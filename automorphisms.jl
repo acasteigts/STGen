@@ -86,7 +86,7 @@ function extend_matchings_aut(g::TGraph, init_orbits, matchings)
 	if isempty(matchings)
 		for orbit in init_orbits
 			e = orbit[1]
-			if e in g.nedges
+			if e in non_edges(g)
 				if e[1] in g.vmax || e[2] in g.vmax
 					push!(output,[e])
 				end
@@ -102,7 +102,7 @@ function extend_matchings_aut(g::TGraph, init_orbits, matchings)
 		orbits = edge_orbits(h, gens)
 		for orbit in orbits
 			e = orbit[1]
-			if e in g.nedges
+			if e in non_edges(g)
 				if e[1] in g.vmax || e[2] in g.vmax
 					if ! (e[1] in h.vmax) && ! (e[2] in h.vmax)
 						if orbit_of_edge(e, init_orbits) >= orbit_of_edge(m[end], init_orbits)

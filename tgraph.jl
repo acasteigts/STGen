@@ -13,7 +13,7 @@ isclique(g::TGraph) = length(g.nedges) == 0
 
 genpairs(n) = [(i,j) for i::Int8 in 1:n-1 for j::Int8 in i+1:n]
 
-include("automorphisms.jl")
+# include("automorphisms.jl")
 
 # Reference implementation for information, not used (see construct_from())
 function construct_from_ref(g::TGraph, new_edges::Vector{Tuple{Int8,Int8}}, t::Int8, rigid = g.rigid)
@@ -75,6 +75,10 @@ function add_edge(g::TGraph, u, v, t)
 	filter!(e->e≠(u, v), g.nedges)
 end
 
+function non_edges(g)
+	return g.nedges
+end
+
 function neighbors_dict(g::TGraph)
 	neighbors = [Dict{Int8,Int8}() for _ in 1:g.n]
 	for (u,v,t) in g.tedges::Vector{Tuple{Int8,Int8,Int8}}
@@ -106,4 +110,8 @@ function predecessors(g::TGraph)
 		union!(preds[v], preds[u])
 	end
 	return preds
+end
+
+function is_tc(g)
+    return all(length(p) == g.n for p in predecessors(g))
 end
