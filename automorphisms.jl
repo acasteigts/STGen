@@ -20,27 +20,6 @@ function get_components(g::TGraph)
 	return final
 end
 
-function get_noncomponents(g::TGraph)::Vector{Vector{Int8}}
-	# faster than union-find
-	comps = [[u] for u::Int8 in 1:g.n]
-	for (u, v) in g.nedges
-		if comps[u] != comps[v]
-			append!(comps[u],comps[v])
-			for w in comps[v]
-				comps[w] = comps[u]
-			end
-		end
-	end
-	# return unique!(comps) # Ref impl (slower than the following loop)
-	final = Vector{Vector{Int8}}()
-	for comp in comps
-		if length(comp) > 1 && ! (comp in final)
-			push!(final, comp)
-		end
-	end
-	return final
-end
-
 function get_root(parents, i)::Int8
 	res = parents[i] < 0 ? i : get_root(parents, parents[i])
 	return res
