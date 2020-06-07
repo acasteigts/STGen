@@ -92,6 +92,37 @@ function get_matchings_aut(g::TGraph, gens)
 end
 
 
+function get_noncomponents(g::TGraph)::Vector{Vector{Int8}}
+	# faster than union-find
+	comps = [[u] for u::Int8 in 1:g.n]
+	for (u, v) in g.nedges
+		if comps[u] != comps[v]
+			append!(comps[u],comps[v])
+			for w in comps[v]
+				comps[w] = comps[u]
+			end
+		end
+	end
+	# return unique!(comps) # Ref impl (slower than the following loop)
+	final = Vector{Vector{Int8}}()
+	for comp in comps
+		if length(comp) > 1 && ! (comp in final)
+			push!(final, comp)
+		end
+	end
+	return final
+end
+
+# At least one edge must be selected in each component
+function filter_dead_end(m::Vector{Tuple{Int8, Int8}}, components::Vector{Vector{Int8}})
+    if length(m) < length(components)
+        return false
+	end
+    vertices = collect(Iterators.flatten(m))
+	return all(!isempty(intersect(vertices, comp)) for comp in components)
+end
+
+
 function extensions(g::TGraph)
 	rigid = g.rigid
 	if rigid
@@ -103,6 +134,15 @@ function extensions(g::TGraph)
 			matchings = get_matchings_rigid(g)
 		else
 			matchings = get_matchings_aut(g, gens)
+		end
+	end
+
+    # The following is only relevant for generating cliques with n >= 8
+    if g.n >= 8
+        noncomponents = get_noncomponents(g)
+		nb_noncomp = length(noncomponents)
+        if nb_noncomp > 1
+			filter!(m -> filter_dead_end(m, noncomponents), matchings)
 		end
 	end
 
