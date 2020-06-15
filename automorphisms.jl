@@ -30,7 +30,11 @@ function edge_image(u, v, perm)::Tuple{Int8, Int8}
 	return res
 end
 
-function edge_orbits(g::TGraph, gens)
+function edge_index(u::Int8, v::Int8, n::Int8)::Int8
+	return (u - 1) * (n - (u / 2)) + (v - u)
+end
+
+function edge_orbits_from_gens(g::TGraph, gens)
     n = g.n
     m = Int8(n * (n - 1) / 2)
 	epairs = genpairs(n)
@@ -46,7 +50,7 @@ function edge_orbits(g::TGraph, gens)
                     if u2 == u && v2 == v
                         break
                     else
-						ind = Int8(findfirst(x -> x==(u2,v2), epairs))
+						ind = edge_index(u2, v2, n)
                         root2 = get_root(parents, ind)
                         if i != root2
 							parents[i] += parents[root2]
@@ -99,7 +103,7 @@ function extend_matchings_aut(g::TGraph, init_orbits, matchings)
 		t = Int8(g.tmax + 1)
 		h = construct_from(g, m, t, false)
 		gens = automorphism_group(h)
-		orbits = edge_orbits(h, gens)
+		orbits = edge_orbits_from_gens(h, gens)
 		for orbit in orbits
 			e = orbit[1]
 			if e in non_edges(g)
@@ -116,7 +120,8 @@ function extend_matchings_aut(g::TGraph, init_orbits, matchings)
 	return output
 end
 
-function find_gens_intra_comp(neighbors, comp) # restricted to given component
+
+function find_gens_intra_comp(neighbors, comp)
     n = length(neighbors)
     perms = Vector{Vector{Int8}}() # generators for this component, trivially extended to V
     u, tail = Iterators.peel(comp)
