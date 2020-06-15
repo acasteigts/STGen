@@ -75,6 +75,10 @@ function add_edge(g::TGraph, u, v, t)
 	filter!(e->e≠(u, v), g.nedges)
 end
 
+function edge_index(g::TGraph, u::Int8, v::Int8)::Int8
+	return (u - 1) * (g.n - (u / 2)) + (v - u)
+end
+
 function non_edges(g)
 	return g.nedges
 end
@@ -88,19 +92,34 @@ function neighbors_dict(g::TGraph)
 	return neighbors
 end
 
-function has_isolated_vertex(g::TGraph)
-    for u in 1:g.n
-		deg = 0
-        for (v, w, t) in g.tedges
-            if v == u || w == u
-				deg += 1
+function get_components(g::TGraph)
+	# faster than union-find
+	comps = [[u] for u::Int8 in 1:g.n]
+	for (u, v, t) in g.tedges
+		if comps[u] != comps[v]
+			append!(comps[u],comps[v])
+			for w in comps[v]
+				comps[w] = comps[u]
 			end
 		end
-		if deg == 0
-			return true
+	end
+	# return unique!(comps) # Ref impl (slower than the following loop)
+	final = Vector{Vector{Int8}}()
+	for comp in comps
+		if ! (comp in final)
+			push!(final, comp)
 		end
 	end
-    return false
+	return final
+end
+
+function has_isolated_vertex(g::TGraph)
+	isolated = fill(true, g.n)
+	for (u, v, t) in g.tedges
+		isolated[u] = false
+		isolated[v] = false
+	end
+	return any(isolated)
 end
 
 function predecessors(g::TGraph)

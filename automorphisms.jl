@@ -1,25 +1,4 @@
 
-function get_components(g::TGraph)
-	# faster than union-find
-	comps = [[u] for u::Int8 in 1:g.n]
-	for (u, v, t) in g.tedges
-		if comps[u] != comps[v]
-			append!(comps[u],comps[v])
-			for w in comps[v]
-				comps[w] = comps[u]
-			end
-		end
-	end
-	# return unique!(comps) # Ref impl (slower than the following loop)
-	final = Vector{Vector{Int8}}()
-	for comp in comps
-		if ! (comp in final)
-			push!(final, comp)
-		end
-	end
-	return final
-end
-
 function get_root(parents, i)::Int8
 	res = parents[i] < 0 ? i : get_root(parents, parents[i])
 	return res
@@ -28,10 +7,6 @@ end
 function edge_image(u, v, perm)::Tuple{Int8, Int8}
 	res = perm[u] < perm[v] ? (perm[u], perm[v]) : (perm[v], perm[u])
 	return res
-end
-
-function edge_index(u::Int8, v::Int8, n::Int8)::Int8
-	return (u - 1) * (n - (u / 2)) + (v - u)
 end
 
 function edge_orbits_from_gens(g::TGraph, gens)

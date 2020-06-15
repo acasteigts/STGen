@@ -80,7 +80,7 @@ end
 function get_matchings_aut(g::TGraph, gens)
 	matchings = Vector{Tuple{Int8,Int8}}[]
 	nmatchings = Vector{Tuple{Int8,Int8}}[]
-	init_orbits = edge_orbits(g, gens)
+	init_orbits = edge_orbits_from_gens(g, gens)
 	for i in 1:Int8(floor(g.n / 2))
 		nmatchings = extend_matchings_aut(g, init_orbits, nmatchings)
 		if !isempty(nmatchings)

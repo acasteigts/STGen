@@ -173,12 +173,12 @@ function brute_force(g)
 end
 
 function select(g::TGraph)
-	if is_dismountable(g)
+	# if is_dismountable(g)
+	# 	return false
+	if has_pivot_vertex(g)
 		return false
-	elseif has_pivot_vertex(g)
-		return false
-	elseif has_optimal_spanner(g, 1)
-		return false
+	# elseif has_optimal_spanner(g, 1)
+	# 	return false
 	else
 		return true
 	end
