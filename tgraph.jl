@@ -75,8 +75,8 @@ function add_edge(g::TGraph, u, v, t)
 	filter!(e->e≠(u, v), g.nedges)
 end
 
-function edge_index(g::TGraph, u::Int8, v::Int8)::Int8
-	return (u - 1) * (g.n - (u / 2)) + (v - u)
+function edge_index(n::Int8, u::Int8, v::Int8)::Int8
+	return (u - 1) * (n - (u / 2)) + (v - u)
 end
 
 function non_edges(g)

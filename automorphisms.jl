@@ -5,19 +5,19 @@ function get_root(parents, i)::Int8
 end
 
 function edge_image(u, v, perm)::Tuple{Int8, Int8}
-	res = perm[u] < perm[v] ? (perm[u], perm[v]) : (perm[v], perm[u])
-	return res
+	u2 = perm[u]
+	v2 = perm[v]
+	return min((u2, v2), (v2, u2))
 end
 
 function edge_orbits_from_gens(g::TGraph, gens)
     n = g.n
     m = Int8(n * (n - 1) / 2)
-	epairs = genpairs(n)
+	edges = genpairs(n)
     parents = fill(Int8(-1), m)
 
-    for i in 1:length(epairs)
+    for (i, (u, v)) in enumerate(edges)
         if parents[i] < 0 # if root
-            (u, v) = epairs[i]
             for perm in gens
                 u2, v2 = u, v
                 while true
@@ -25,7 +25,7 @@ function edge_orbits_from_gens(g::TGraph, gens)
                     if u2 == u && v2 == v
                         break
                     else
-						ind = edge_index(u2, v2, n)
+						ind = edge_index(n, u2, v2)
                         root2 = get_root(parents, ind)
                         if i != root2
 							parents[i] += parents[root2]
@@ -48,7 +48,8 @@ function edge_orbits_from_gens(g::TGraph, gens)
 		end
 	end
 	sparents = Set(parents)
-	res = [[epairs[i] for (i,e) in enumerate(parents) if e == r] for r in sparents]
+	res = [[edges[i] for (i,e) in enumerate(parents) if e == r] for r in sparents]
+	# return filter!(e -> e[1] in non_edges(g), res)
 	return res
 end
 
@@ -60,40 +61,6 @@ function orbit_of_edge(e, orbits)
 	end
 end
 
-function extend_matchings_aut(g::TGraph, init_orbits, matchings)
-	output = Vector{Tuple{Int8,Int8}}[]
-	if isempty(matchings)
-		for orbit in init_orbits
-			e = orbit[1]
-			if e in non_edges(g)
-				if e[1] in g.vmax || e[2] in g.vmax
-					push!(output,[e])
-				end
-			end
-		end
-		return output
-	end
-
-	for m in matchings
-		t = Int8(g.tmax + 1)
-		h = construct_from(g, m, t, false)
-		gens = automorphism_group(h)
-		orbits = edge_orbits_from_gens(h, gens)
-		for orbit in orbits
-			e = orbit[1]
-			if e in non_edges(g)
-				if e[1] in g.vmax || e[2] in g.vmax
-					if ! (e[1] in h.vmax) && ! (e[2] in h.vmax)
-						if orbit_of_edge(e, init_orbits) >= orbit_of_edge(m[end], init_orbits)
-							push!(output, vcat(m, [e]))
-						end
-					end
-				end
-			end
-		end
-	end
-	return output
-end
 
 
 function find_gens_intra_comp(neighbors, comp)

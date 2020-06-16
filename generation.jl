@@ -77,6 +77,42 @@ function get_matchings_rigid(g::TGraph)
 end
 
 
+function extend_matchings_aut(g::TGraph, init_orbits, matchings)
+	output = Vector{Tuple{Int8,Int8}}[]
+	if isempty(matchings)
+		# Nothing added so far: add first edge of every orbit (separately)
+		for orbit in init_orbits
+			e = orbit[1]
+			if e in non_edges(g)
+				if e[1] in g.vmax || e[2] in g.vmax
+					push!(output,[e])
+				end
+			end
+		end
+		return output
+	end
+
+	for m in matchings
+		t = Int8(g.tmax + 1)
+		h = construct_from(g, m, t, false)
+		gens = automorphism_group(h)
+		orbits = edge_orbits_from_gens(h, gens)
+		for orbit in orbits
+			e = orbit[1]
+			if e in non_edges(h)
+				if e[1] in g.vmax || e[2] in g.vmax
+					if ! (e[1] in h.vmax) && ! (e[2] in h.vmax)
+						if orbit_of_edge(e, init_orbits) >= orbit_of_edge(m[end], init_orbits)
+							push!(output, [m; [e]])
+						end
+					end
+				end
+			end
+		end
+	end
+	return output
+end
+
 function get_matchings_aut(g::TGraph, gens)
 	matchings = Vector{Tuple{Int8,Int8}}[]
 	nmatchings = Vector{Tuple{Int8,Int8}}[]
@@ -94,26 +130,24 @@ end
 
 
 function extensions(g::TGraph)
-	rigid = g.rigid
-	if rigid
-		matchings = get_matchings_rigid(g)
-	else
+	if !g.rigid
 		gens = automorphism_group(g)
-		rigid = isempty(gens)
-		if rigid
-			matchings = get_matchings_rigid(g)
-		else
-			matchings = get_matchings_aut(g, gens)
-		end
+		g.rigid = isempty(gens)
 	end
 
-	succ = Vector{TGraph}(undef, length(matchings))
+	if g.rigid
+		matchings = get_matchings_rigid(g)
+	else
+		matchings = get_matchings_aut(g, gens)
+	end
+
+	exts = Vector{TGraph}(undef, length(matchings))
 	t = Int8(g.tmax + 1)
 	for i in 1:length(matchings)
-		h = construct_from(g, matchings[i], t, rigid)
-		succ[i] = h
+		h = construct_from(g, matchings[i], t, g.rigid)
+		exts[i] = h
 	end
-	return succ
+	return exts
 end
 
 
