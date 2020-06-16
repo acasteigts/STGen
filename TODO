@@ -1,0 +1,2 @@
+Comment construire les générateurs du premier graphe ?
+Actuellement je créé g = TGraph(5) à la main, puis appelle g.gens = automorphism_group(g)

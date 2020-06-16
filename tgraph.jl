@@ -28,6 +28,9 @@ function construct_from_ref(g, new_edges::Vector{Tuple{Int8,Int8}}, t::Int8, gen
 	h = TGraph(g.n, t, time_edges, non_edges, vmax)
 	if !isrigid(g)
 		h.gens = automorphism_group(h)
+		if isempty(h.gens)
+			h.gens = nothing
+		end
 	end
 	return h
 end
@@ -59,6 +62,9 @@ function construct_from(g, new_edges::Vector{Tuple{Int8,Int8}}, t::Int8, gens = 
 	h = TGraph(g.n, t, time_edges, non_edges, vmax)
 	if !isrigid(g)
 		h.gens = automorphism_group(h)
+		if isempty(h.gens)
+			h.gens = nothing
+		end
 	end
 	return h
 end
