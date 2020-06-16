@@ -4,8 +4,8 @@ mutable struct TGraph
 	tedges::Vector{Tuple{Int8,Int8,Int8}}
 	nedges::Vector{Tuple{Int8,Int8}}
 	vmax::Vector{Int8}
-	rigid::Bool
-	TGraph(n, tmax=0, tedges=[], nedges=genpairs(n), vmax=collect(1:n), rigid=false) = new(Int8(n), tmax, tedges, nedges, vmax, rigid)
+	gens::Union{Nothing, Vector{Vector{Int8}}}
+	TGraph(n, tmax=0, tedges=[], nedges=genpairs(n), vmax=collect(1:n), gens = nothing) = new(Int8(n), tmax, tedges, nedges, vmax, gens)
 	# TGraph(g::TGraph) = new(g.n, g.tmax, copy(g.tedges), copy(g.nedges), Int8[], g.rigid)
 end
 
@@ -16,7 +16,7 @@ genpairs(n) = [(i,j) for i::Int8 in 1:n-1 for j::Int8 in i+1:n]
 # include("automorphisms.jl")
 
 # Reference implementation for information, not used (see construct_from())
-function construct_from_ref(g, new_edges::Vector{Tuple{Int8,Int8}}, t::Int8, rigid = isrigid(g))
+function construct_from_ref(g, new_edges::Vector{Tuple{Int8,Int8}}, t::Int8, gens = nothing)
 	time_edges = copy(g.tedges)
 	non_edges = copy(g.nedges)
 	vmax = Int8[]
@@ -25,11 +25,15 @@ function construct_from_ref(g, new_edges::Vector{Tuple{Int8,Int8}}, t::Int8, rig
 		push!(vmax, u, v)
 		filter!(e->e≠(u, v), non_edges)
 	end
-	return TGraph(g.n, t, time_edges, non_edges, vmax, rigid)
+	h = TGraph(g.n, t, time_edges, non_edges, vmax)
+	if !isrigid(g)
+		h.gens = automorphism_group(h)
+	end
+	return h
 end
 
 # UGLY BUT FASTER
-function construct_from(g, new_edges::Vector{Tuple{Int8,Int8}}, t::Int8, rigid = isrigid(g))
+function construct_from(g, new_edges::Vector{Tuple{Int8,Int8}}, t::Int8, gens = nothing)
 	m = length(g.tedges)
 	k = length(new_edges)
 	time_edges = Vector{Tuple{Int8,Int8,Int8}}(undef, m + k)
@@ -52,7 +56,11 @@ function construct_from(g, new_edges::Vector{Tuple{Int8,Int8}}, t::Int8, rigid =
 		vmax[2*i-1] = u
 		vmax[2*i] = v
 	end
-	return TGraph(g.n, t, time_edges, non_edges, vmax, rigid)
+	h = TGraph(g.n, t, time_edges, non_edges, vmax)
+	if !isrigid(g)
+		h.gens = automorphism_group(h)
+	end
+	return h
 end
 
 function add_edges_new_time(g, edges::Vector{Tuple{Int8,Int8}}, t::Int8)
@@ -84,7 +92,7 @@ function non_edges(g)
 end
 
 function isrigid(g)
-	return g.rigid
+	return g.gens == nothing
 end
 
 function neighbors_dict(g)

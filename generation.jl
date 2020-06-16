@@ -130,21 +130,16 @@ end
 
 
 function extensions(g)
-	if !isrigid(g)
-		gens = automorphism_group(g)
-		g.rigid = isempty(gens)
-	end
-
 	if isrigid(g)
 		matchings = get_matchings_rigid(g)
 	else
-		matchings = get_matchings_aut(g, gens)
+		matchings = get_matchings_aut(g, g.gens)
 	end
 
 	exts = Vector{TGraph}(undef, length(matchings))
 	t = Int8(g.tmax + 1)
 	for i in 1:length(matchings)
-		h = construct_from(g, matchings[i], t, isrigid(g))
+		h = construct_from(g, matchings[i], t)
 		exts[i] = h
 	end
 	return exts
