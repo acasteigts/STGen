@@ -9,14 +9,14 @@ mutable struct TGraph
 	# TGraph(g::TGraph) = new(g.n, g.tmax, copy(g.tedges), copy(g.nedges), Int8[], g.rigid)
 end
 
-isclique(g::TGraph) = length(g.nedges) == 0
+isclique(g) = length(g.nedges) == 0
 
 genpairs(n) = [(i,j) for i::Int8 in 1:n-1 for j::Int8 in i+1:n]
 
 # include("automorphisms.jl")
 
 # Reference implementation for information, not used (see construct_from())
-function construct_from_ref(g::TGraph, new_edges::Vector{Tuple{Int8,Int8}}, t::Int8, rigid = g.rigid)
+function construct_from_ref(g, new_edges::Vector{Tuple{Int8,Int8}}, t::Int8, rigid = isrigid(g))
 	time_edges = copy(g.tedges)
 	non_edges = copy(g.nedges)
 	vmax = Int8[]
@@ -29,7 +29,7 @@ function construct_from_ref(g::TGraph, new_edges::Vector{Tuple{Int8,Int8}}, t::I
 end
 
 # UGLY BUT FASTER
-function construct_from(g::TGraph, new_edges::Vector{Tuple{Int8,Int8}}, t::Int8, rigid = g.rigid)
+function construct_from(g, new_edges::Vector{Tuple{Int8,Int8}}, t::Int8, rigid = isrigid(g))
 	m = length(g.tedges)
 	k = length(new_edges)
 	time_edges = Vector{Tuple{Int8,Int8,Int8}}(undef, m + k)
@@ -55,7 +55,7 @@ function construct_from(g::TGraph, new_edges::Vector{Tuple{Int8,Int8}}, t::Int8,
 	return TGraph(g.n, t, time_edges, non_edges, vmax, rigid)
 end
 
-function add_edges_new_time(g::TGraph, edges::Vector{Tuple{Int8,Int8}}, t::Int8)
+function add_edges_new_time(g, edges::Vector{Tuple{Int8,Int8}}, t::Int8)
 	g.tmax = t
 	empty!(g.vmax)
 	for (u, v) in edges
@@ -65,7 +65,7 @@ function add_edges_new_time(g::TGraph, edges::Vector{Tuple{Int8,Int8}}, t::Int8)
 	end
 end
 
-function add_edge(g::TGraph, u, v, t)
+function add_edge(g, u, v, t)
     push!(g.tedges, (u, v, t))
 	if t > g.tmax
 		g.tmax = t
@@ -83,7 +83,11 @@ function non_edges(g)
 	return g.nedges
 end
 
-function neighbors_dict(g::TGraph)
+function isrigid(g)
+	return g.rigid
+end
+
+function neighbors_dict(g)
 	neighbors = [Dict{Int8,Int8}() for _ in 1:g.n]
 	for (u,v,t) in g.tedges::Vector{Tuple{Int8,Int8,Int8}}
 		neighbors[u][t] = v
@@ -92,7 +96,7 @@ function neighbors_dict(g::TGraph)
 	return neighbors
 end
 
-function get_components(g::TGraph)
+function get_components(g)
 	# faster than union-find
 	comps = [[u] for u::Int8 in 1:g.n]
 	for (u, v, t) in g.tedges
@@ -113,7 +117,7 @@ function get_components(g::TGraph)
 	return final
 end
 
-function has_isolated_vertex(g::TGraph)
+function has_isolated_vertex(g)
 	isolated = fill(true, g.n)
 	for (u, v, t) in g.tedges
 		isolated[u] = false
@@ -122,7 +126,7 @@ function has_isolated_vertex(g::TGraph)
 	return any(isolated)
 end
 
-function predecessors(g::TGraph)
+function predecessors(g)
 	preds = [Set{Int8}(u) for u in 1:g.n]
 	for (u, v, _) in g.tedges
 		union!(preds[u], preds[v])

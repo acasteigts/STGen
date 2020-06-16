@@ -2,11 +2,11 @@ include("tgraph.jl")
 include("automorphisms.jl")
 using DataStructures
 
-function are_adjacent(e::Tuple{Int8,Int8}, f::Tuple{Int8,Int8})
+function are_adjacent(e, f)
 	return e[1]==f[1] || e[1]==f[2] || e[2]==f[1] || e[2]==f[2]
 end
 
-function valid_subsets_small(edges::Vector{Tuple{Int8,Int8}})::Vector{Vector{Tuple{Int8,Int8}}}
+function valid_subsets_small(edges)
 	if isempty(edges)
         return [Tuple{Int8, Int8}[]]
 	elseif length(edges) == 1
@@ -51,7 +51,7 @@ function valid_subsets_small(edges::Vector{Tuple{Int8,Int8}})::Vector{Vector{Tup
 	end
 end
 
-function valid_subsets(edges::Vector{Tuple{Int8,Int8}})::Vector{Vector{Tuple{Int8,Int8}}}
+function valid_subsets(edges)::Vector{Vector{Tuple{Int8,Int8}}}
 	if length(edges) < 4
 		return valid_subsets_small(edges)
 	end
@@ -69,7 +69,7 @@ function valid_subsets(edges::Vector{Tuple{Int8,Int8}})::Vector{Vector{Tuple{Int
 end
 
 
-function get_matchings_rigid(g::TGraph)
+function get_matchings_rigid(g)
 	edges = filter(e -> e[1] in g.vmax || e[2] in g.vmax, non_edges(g))
 	res = valid_subsets(edges)
 	pop!(res)
@@ -77,7 +77,7 @@ function get_matchings_rigid(g::TGraph)
 end
 
 
-function extend_matchings_aut(g::TGraph, init_orbits, matchings)
+function extend_matchings_aut(g, init_orbits, matchings)
 	output = Vector{Tuple{Int8,Int8}}[]
 	if isempty(matchings)
 		# Nothing added so far: add first edge of every orbit (separately)
@@ -113,7 +113,7 @@ function extend_matchings_aut(g::TGraph, init_orbits, matchings)
 	return output
 end
 
-function get_matchings_aut(g::TGraph, gens)
+function get_matchings_aut(g, gens)
 	matchings = Vector{Tuple{Int8,Int8}}[]
 	nmatchings = Vector{Tuple{Int8,Int8}}[]
 	init_orbits = edge_orbits_from_gens(g, gens)
@@ -129,13 +129,13 @@ function get_matchings_aut(g::TGraph, gens)
 end
 
 
-function extensions(g::TGraph)
-	if !g.rigid
+function extensions(g)
+	if !isrigid(g)
 		gens = automorphism_group(g)
 		g.rigid = isempty(gens)
 	end
 
-	if g.rigid
+	if isrigid(g)
 		matchings = get_matchings_rigid(g)
 	else
 		matchings = get_matchings_aut(g, gens)
@@ -144,7 +144,7 @@ function extensions(g::TGraph)
 	exts = Vector{TGraph}(undef, length(matchings))
 	t = Int8(g.tmax + 1)
 	for i in 1:length(matchings)
-		h = construct_from(g, matchings[i], t, g.rigid)
+		h = construct_from(g, matchings[i], t, isrigid(g))
 		exts[i] = h
 	end
 	return exts
