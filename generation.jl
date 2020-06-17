@@ -94,9 +94,8 @@ function extend_matchings_aut(g, init_orbits, matchings)
 
 	for m in matchings
 		t = Int8(g.tmax + 1)
-		h = construct_from(g, m, t, false)
-		gens = automorphism_group(h)
-		orbits = edge_orbits_from_gens(h, gens)
+		h = construct_from(g, m, t)
+		orbits = edge_orbits_from_gens(h, h.gens)
 		for orbit in orbits
 			e = orbit[1]
 			if e in non_edges(h)
@@ -129,7 +128,7 @@ function get_matchings_aut(g, gens)
 end
 
 
-function extensions(g)
+function extensions(g) 
 	if isrigid(g)
 		matchings = get_matchings_rigid(g)
 	else

@@ -1,12 +1,11 @@
-mutable struct TGraph
+struct TGraph
 	n::Int8
 	tmax::Int8
 	tedges::Vector{Tuple{Int8,Int8,Int8}}
 	nedges::Vector{Tuple{Int8,Int8}}
 	vmax::Vector{Int8}
-	gens::Union{Nothing, Vector{Vector{Int8}}}
-	TGraph(n, tmax=0, tedges=[], nedges=genpairs(n), vmax=collect(1:n), gens = nothing) = new(Int8(n), tmax, tedges, nedges, vmax, gens)
-	# TGraph(g::TGraph) = new(g.n, g.tmax, copy(g.tedges), copy(g.nedges), Int8[], g.rigid)
+	gens::Vector{Vector{Int8}}
+	TGraph(n, tmax=0, tedges=Tuple{Int8,Int8,Int8}[], nedges=genpairs(n), vmax=collect(1:n), gens = automorphism_group(n, tedges)) = new(Int8(n), tmax, tedges, nedges, vmax, gens)
 end
 
 isclique(g) = length(g.nedges) == 0
@@ -16,7 +15,7 @@ genpairs(n) = [(i,j) for i::Int8 in 1:n-1 for j::Int8 in i+1:n]
 # include("automorphisms.jl")
 
 # Reference implementation for information, not used (see construct_from())
-function construct_from_ref(g, new_edges::Vector{Tuple{Int8,Int8}}, t::Int8, gens = nothing)
+function construct_from_ref(g, new_edges::Vector{Tuple{Int8,Int8}}, t::Int8)
 	time_edges = copy(g.tedges)
 	non_edges = copy(g.nedges)
 	vmax = Int8[]
@@ -25,18 +24,12 @@ function construct_from_ref(g, new_edges::Vector{Tuple{Int8,Int8}}, t::Int8, gen
 		push!(vmax, u, v)
 		filter!(e->e≠(u, v), non_edges)
 	end
-	h = TGraph(g.n, t, time_edges, non_edges, vmax)
-	if !isrigid(g)
-		h.gens = automorphism_group(h)
-		if isempty(h.gens)
-			h.gens = nothing
-		end
-	end
-	return h
+	gens = isrigid(g) ? g.gens : automorphism_group(g.n, time_edges)
+	return TGraph(g.n, t, time_edges, non_edges, vmax, gens)
 end
 
 # UGLY BUT FASTER
-function construct_from(g, new_edges::Vector{Tuple{Int8,Int8}}, t::Int8, gens = nothing)
+function construct_from(g, new_edges::Vector{Tuple{Int8,Int8}}, t::Int8)
 	m = length(g.tedges)
 	k = length(new_edges)
 	time_edges = Vector{Tuple{Int8,Int8,Int8}}(undef, m + k)
@@ -59,14 +52,8 @@ function construct_from(g, new_edges::Vector{Tuple{Int8,Int8}}, t::Int8, gens = 
 		vmax[2*i-1] = u
 		vmax[2*i] = v
 	end
-	h = TGraph(g.n, t, time_edges, non_edges, vmax)
-	if !isrigid(g)
-		h.gens = automorphism_group(h)
-		if isempty(h.gens)
-			h.gens = nothing
-		end
-	end
-	return h
+	gens = isrigid(g) ? g.gens : automorphism_group(g.n, time_edges)
+	return TGraph(g.n, t, time_edges, non_edges, vmax, gens)
 end
 
 function add_edges_new_time(g, edges::Vector{Tuple{Int8,Int8}}, t::Int8)
@@ -98,7 +85,7 @@ function non_edges(g)
 end
 
 function isrigid(g)
-	return g.gens == nothing
+	return isempty(g.gens)
 end
 
 function neighbors_dict(n, tedges)
