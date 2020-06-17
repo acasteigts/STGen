@@ -87,19 +87,20 @@ function isrigid(g)
 	return g.rigid
 end
 
-function neighbors_dict(g)
-	neighbors = [Dict{Int8,Int8}() for _ in 1:g.n]
-	for (u,v,t) in g.tedges::Vector{Tuple{Int8,Int8,Int8}}
+function neighbors_dict(n, tedges)
+	neighbors = [Dict{Int8,Int8}() for _ in 1:n]
+	for (u,v,t) in tedges::Vector{Tuple{Int8,Int8,Int8}}
 		neighbors[u][t] = v
 		neighbors[v][t] = u
 	end
 	return neighbors
 end
+neighbors_dict(g) = neighbors_dict(g.n, g.tedges)
 
-function get_components(g)
+function get_components(n, tedges)
 	# faster than union-find
-	comps = [[u] for u::Int8 in 1:g.n]
-	for (u, v, t) in g.tedges
+	comps = [[u] for u::Int8 in 1:n]
+	for (u, v, t) in tedges
 		if comps[u] != comps[v]
 			append!(comps[u],comps[v])
 			for w in comps[v]
@@ -116,6 +117,8 @@ function get_components(g)
 	end
 	return final
 end
+get_components(g) = return get_components(g.n, g.tedges)
+
 
 function has_isolated_vertex(g)
 	isolated = fill(true, g.n)
