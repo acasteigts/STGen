@@ -150,9 +150,9 @@ function fit(neighbors, u, v)
     return Set(keys(neighbors[u])) == Set(keys(neighbors[v]))
 end
 
-function automorphism_group(g::TGraph)
-    neighbors = neighbors_dict(g)
-    components = get_components(g)
+function automorphism_group(n, tedges)
+    neighbors = neighbors_dict(n, tedges)
+    components = get_components(n, tedges)
     gens = Vector{Vector{Int8}}()
     for comp in components
         append!(gens, find_gens_intra_comp(neighbors, comp))
@@ -162,3 +162,4 @@ function automorphism_group(g::TGraph)
 	end
     return gens
 end
+automorphism_group(g) = automorphism_group(g.n, g.tedges)
