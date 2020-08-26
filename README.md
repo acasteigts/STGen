@@ -63,7 +63,7 @@ Technically, an STG is characterized by the number of vertices and a list of tim
 ```Julia
 julia>
 for g in TGraphs(3)
-	@show g.edges
+    @show g.edges
 end
 
 g.tedges = Tuple{Int8,Int8,Int8}[]
@@ -79,8 +79,8 @@ The original motivation for this generator was to test conjectures on temporal *
 ```Julia
 for g in TGraphs(n)
     if isclique(g)
-		...
-	end
+	...
+    end
 end
 
 julia> count_cliques(5)
