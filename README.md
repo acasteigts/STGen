@@ -33,7 +33,7 @@ The purpose of STGen is to generate *all* such representatives of a given size (
 
 For more on the mathematics behind generation, in particular, the special properties of automorphisms in STGs, the user is referred to the following talk:
 
-*[Efficient generation of simple temporal graphs up to isomorphism](https://www.youtube.com/watch?v=pgRBl--JJVc)*  
+*[Efficient generation of simple temporal graphs up to isomorphism (YouTube)](https://www.youtube.com/watch?v=pgRBl--JJVc)*  
 *Arnaud Casteigts, 3rd workshop on Algorithmic Aspects of Temporal Graphs (@ICALP 2020)*
 
 
