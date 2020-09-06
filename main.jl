@@ -1,4 +1,3 @@
-include("tgraph.jl")
 include("generation.jl")
 include("spanners.jl")
 
@@ -22,6 +21,17 @@ function count_graphs(root::TGraph)
 	return count
 end
 count_graphs(n::Int64) = count_graphs(TGraph(n))
+
+function count_tc(root::TGraph)
+	count = 0
+	for g in TGraphs(root)
+		if is_tc(g)
+			count += 1
+		end
+	end
+	return count
+end
+count_tc(n::Int64) = count_tc(TGraph(n))
 
 function count_symmetric(root::TGraph) # Should be 14 instead of 18 for n=4
 	count = 0

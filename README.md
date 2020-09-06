@@ -1,4 +1,4 @@
-# STGen (Simple Temporal Graph Generator)
+# STGen (Simple Temporal graph Generator)
 A tool for generating simple temporal graphs up to isomorphism
 
 ## Background
@@ -34,7 +34,7 @@ The purpose of STGen is to generate *all* such representatives of a given size (
 For more on the mathematics behind generation, in particular, the special properties of automorphisms in STGs, the user is referred to the following talk:
 
 *[Efficient generation of simple temporal graphs up to isomorphism (YouTube)](https://www.youtube.com/watch?v=pgRBl--JJVc)*  
-*Arnaud Casteigts, 3rd workshop on Algorithmic Aspects of Temporal Graphs (@ICALP 2020)*
+*Arnaud Casteigts, 3rd workshop on Algorithmic Aspects of Temporal Graphs (@ ICALP 2020)*
 
 
 ## How to use STGen?
@@ -89,26 +89,26 @@ julia> count_cliques(5)
 
 As shown below, the number of different STGs up to isomorphism explodes at an unreasonable rate:
 
-| #Vertices   |      #STGs      |  #Temporal cliques |
-|----------|:-------------:|:------:|
-| 1 |  1 | 1 |
-| 2 |  2 | 1 |
-| 3 |  4 | 1 |
-| 4 | 62 | 20 |
-| 5 | 15378 | 4524 |
-| 6 | 89769096 | 23218501 |
-| 7 | 13828417028594 | 3129434545680 |
-| 8 | ? | ? |
+| # Vertices   |      # STGs      |  # Temporally connected STGs |  # Simple Temporal cliques |
+|:----------:|:-------------:|:------:|:------:|
+| 1 |  1 | 1 | 1 |
+| 2 |  2 | 1 | 1 |
+| 3 |  4 | 1 | 1 |
+| 4 | 62 | 32 | 20 |
+| 5 | 15378 | 10207 | 4524 |
+| 6 | 89769096 | 70557834 | 23218501 |
+| 7 | 13828417028594 | ? | 3129434545680 |
+| 8 | ? | ? | ? |
 
 Therefore, in practice, one should not aim to brute force a conjecture naively above n=6 or perhaps 7.
 
 # Make it parallel
 
-The special features of the automorphism group of an STG make it possible to generate them as a tree whose branches are *independent* 
-(no comparisons are required between the branches). Thus, the code can easily be parallelized. 
-A look in the `main.jl` file will show you some ways to do so. 
-Essentially, the generator can take as parameter a graph rather than a number of vertices. 
-In this case, it generates only the subtree from that graph (the version with a number of vertices actually just calls this generator with an empty graph). 
-It is therefore sufficient to generate a bunch of graphs at small depth and map these graphs to different processors/threads as a pool of independent jobs. 
-Julia offers the `pmap` primitive (among others) to perform thus things. 
+The special features of the automorphism group of an STG make it possible to generate them as a tree whose branches are *independent*
+(no comparisons are required between the branches). Thus, the code can easily be parallelized.
+A look in the `main.jl` file will show you some ways to do so.
+Essentially, the generator can take as parameter a graph rather than a number of vertices.
+In this case, it generates only the subtree from that graph (the version with a number of vertices actually just calls this generator with an empty graph).
+It is therefore sufficient to generate a bunch of graphs at small depth and map these graphs to different processors/threads as a pool of independent jobs.
+Julia offers the `pmap` primitive (among others) to perform thus things.
 Again, the interested user is referred to the `main.jl` class for an example.
