@@ -1,4 +1,4 @@
-# STGen (Simple Temporal graph Generator)
+# STGen (A Generator for Simple Temporal Graphs)
 A tool for generating simple temporal graphs up to isomorphism
 
 ## Background
