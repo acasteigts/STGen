@@ -1,0 +1,22 @@
+[package]
+name = "rust"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[profile.release]
+debug = 1
+lto = true
+codegen-units = 1
+panic = "abort" # seems useless in my case
+# Note: RUSTFLAGS="-C target-cpu=native" cargo build --release
+
+[dependencies]
+itertools = "0.10.3"
+rayon = "1.5"
+rand = "0.8.4"
+
+[[bin]]
+name = "STGen"
+path = "src/main.rs"
