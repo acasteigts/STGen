@@ -35,11 +35,11 @@ For more on the mathematics behind generation, in particular, the special proper
 
 *[Efficient generation of simple temporal graphs up to isomorphism (YouTube)](https://www.youtube.com/watch?v=pgRBl--JJVc)*  
 *Arnaud Casteigts, 3rd workshop on Algorithmic Aspects of Temporal Graphs (@ ICALP 2020)*
+*[Longer version of the talk, in French](https://visio.u-bordeaux.fr/playback/presentation/2.0/playback.html?meetingId=bfe00d5046e9d24d0c256a9acfb841c176461c85-1599467221221)
 
+This repository contains two versions: Julia and Rust.
 
-## How to use STGen?
-
-The current version of STGen is written in Julia. There is also a version in Python which is less efficient, but can interact with some group theory features within Sage (to be released shortly).
+## How to use STGen in Julia ?
 
 Here is a basic example that generates (and counts) STG representatives for a given number of vertices:
 
@@ -102,7 +102,7 @@ As shown below, the number of different STGs up to isomorphism explodes at an un
 
 Therefore, in practice, one should not aim to brute force a conjecture naively above n=6 or perhaps 7.
 
-# Make it parallel
+### Make it parallel
 
 The special features of the automorphism group of an STG make it possible to generate them as a tree whose branches are *independent*
 (no comparisons are required between the branches). Thus, the code can easily be parallelized.
