@@ -39,7 +39,7 @@ For more on the mathematics behind generation, in particular, the special proper
 
 This repository contains two versions: Julia and Rust.
 
-## How to use STGen in Julia?
+## Julia version
 
 Here is a basic example that generates (and counts) STG representatives for a given number of vertices:
 
@@ -114,7 +114,7 @@ Julia offers the `pmap` primitive (among others) to perform thus things.
 Again, the interested user is referred to the `main.jl` class for an example.
 
 
-## How to use STGen in Rust?
+## Rust version
 
 This version actually uses a lot of optimization that the Julia version does not, so it would be unfair to Julia to claim that the difference in performance is solely due to the language.
 
