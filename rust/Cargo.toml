@@ -18,5 +18,5 @@ rayon = "1.5"
 rand = "0.8.4"
 
 [[bin]]
-name = "STGen"
+name = "stgen"
 path = "src/main.rs"
