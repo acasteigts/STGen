@@ -39,7 +39,7 @@ For more on the mathematics behind generation, in particular, the special proper
 
 This repository contains two versions: Julia and Rust.
 
-## How to use STGen in Julia ?
+## How to use STGen in Julia?
 
 Here is a basic example that generates (and counts) STG representatives for a given number of vertices:
 
@@ -112,3 +112,18 @@ In this case, it generates only the subtree from that graph (the version with a 
 It is therefore sufficient to generate a bunch of graphs at small depth and map these graphs to different processors/threads as a pool of independent jobs.
 Julia offers the `pmap` primitive (among others) to perform thus things.
 Again, the interested user is referred to the `main.jl` class for an example.
+
+
+## How to use STGen in Rust?
+
+This version actually uses a lot of optimization that the Julia version does not, so it would be unfair to Julia to claim that the difference in performance is only due to the language.
+
+Assuming that you have a valid version of rust and cargo installed.
+
+Go into the rust directory, and type `cargo build --release` in order to compile an optimized binary of STGen. Then, type `cargo run --release`.
+
+By default, this launches the parallel version of the generator, which enumerates (although only the count is shown) all STGs on 6 vertices up to isomorphism (in fact, reachability equivalence, see above). The main function in `main.rs` has a bunch of other function calls commented. You can execute any of them by uncommenting the corresponding line (instead of the default call to `generate_par`).
+
+### Number of vertices?
+
+For performance, the code uses no vectors for most of the processing (thus, no dynamic allocation). As such, the size of the arrays are determined at compilation time according to the number of vertices, which is to be set at the top of the `main.rs` file. This is not very convenient, but makes a big difference.
