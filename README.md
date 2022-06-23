@@ -116,14 +116,12 @@ Again, the interested user is referred to the `main.jl` class for an example.
 
 ## How to use STGen in Rust?
 
-This version actually uses a lot of optimization that the Julia version does not, so it would be unfair to Julia to claim that the difference in performance is only due to the language.
+This version actually uses a lot of optimization that the Julia version does not, so it would be unfair to Julia to claim that the difference in performance is solely due to the language.
 
-Assuming that you have a valid version of rust and cargo installed.
+Assuming that you have a valid version of rust and cargo installed, go into the rust directory, and type `cargo build --release` in order to compile an optimized binary of STGen. (You may have to tweak the version in `Cargo.toml`.) Then, type `cargo run --release`.
 
-Go into the rust directory, and type `cargo build --release` in order to compile an optimized binary of STGen. Then, type `cargo run --release`.
+By default, this launches the parallel version of the generator, which enumerates (although only the count is shown) all STGs on 6 vertices up to isomorphism (in fact, up to reachability equivalence, see above). The main function in `main.rs` has a bunch of commented calls to other functions. You may execute any of them by uncommenting the corresponding line (the default call is to `generate_par()`).
 
-By default, this launches the parallel version of the generator, which enumerates (although only the count is shown) all STGs on 6 vertices up to isomorphism (in fact, reachability equivalence, see above). The main function in `main.rs` has a bunch of other function calls commented. You can execute any of them by uncommenting the corresponding line (instead of the default call to `generate_par`).
+### Changing the number of vertices
 
-### Number of vertices?
-
-For performance, the code uses no vectors for most of the processing (thus, no dynamic allocation). As such, the size of the arrays are determined at compilation time according to the number of vertices, which is to be set at the top of the `main.rs` file. This is not very convenient, but makes a big difference.
+For performance, the critical parts of the code use no vectors (thus, no dynamic allocation). Instead, the size of the arrays are hard coded at compilation time, depending on the number of vertices. This number can be set at the top of the `main.rs` file. Concededly, this is not very convenient, but the purpose of the generator, so far, was to test for conjectures on as many graphs as possible.
