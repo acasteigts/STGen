@@ -2,6 +2,7 @@
 #define _STGEN_TGRAPH
 #include <bitset>
 #include <array>
+#include <iostream>
 #include "tedge.hpp"
 
 namespace stgen{
@@ -55,6 +56,17 @@ struct TGraph {
 
 };
 
+template<int N>
+ostream& operator<<(ostream &os, const TGraph<N> &g){
+    os << "[";
+    for (int i=0; i< g.nb_edges; i++){
+        TEdge e = g.tedges[i];
+        if (i > 0){os << ",";}
+        os << "(" << std::to_string(e.u) << "," << std::to_string(e.v) << "," << std::to_string(e.t) << ")";
+    }
+    os << "]";
+    return os;
+}
 
 }
 #endif
