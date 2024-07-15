@@ -86,7 +86,7 @@ int64_t visit_graph(const TGraph<N>& g){
                     const TGraph h = TGraph<N>{g, cand_edges};
                     nb += visit_graph<N>(h);
                 } else {
-                    nb += visit_successors(g, cand_edges, max_new);
+                    nb += visit_successors<N,M>(g, cand_edges, max_new);
                 }
             }
         }
@@ -112,7 +112,7 @@ int64_t visit_graph(const SymmetricTGraph<N>& g, bool as_symmetric = false){
                 int max_new;
                 bitset<M> cand_edges = candidate_edges(g.tg, max_new);
                 if (max_new > 0){
-                    nb += visit_successors(g, cand_edges, max_new, as_symmetric);
+                    nb += visit_successors<N,M>(g, cand_edges, max_new, as_symmetric);
                 }
             }
         }
