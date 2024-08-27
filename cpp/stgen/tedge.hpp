@@ -58,18 +58,22 @@ static constexpr TEdge<N> i2te(int i, int t=0){
 template<int N, int M=N*(N-1)/2>
 const array<bitset<M>,M> ADJACENT_EDGES = ([](){
     array<bitset<M>,M> adjacent_edges;
-    for (int i=0; i<M; i++){
-        bitset<M> bits;
-        Edge e = i2e<N>(i);
-        for (int j=0; j<M; j++){
-            if (j!=i){
-                Edge f = i2e<N>(j);
-                if ((e.u == f.u) || (e.u == f.v) || (e.v == f.u) || (e.v == f.v)){
-                    bits.set(j);
+    if (N==2){
+        adjacent_edges[0].set(0);
+    } else {
+        for (int i=0; i<M; i++){
+            bitset<M> bits;
+            Edge e = i2e<N>(i);
+            for (int j=0; j<M; j++){
+                if (j!=i){
+                    Edge f = i2e<N>(j);
+                    if ((e.u == f.u) || (e.u == f.v) || (e.v == f.u) || (e.v == f.v)){
+                        bits.set(j);
+                    }
                 }
             }
+            adjacent_edges[i]=bits;
         }
-        adjacent_edges[i]=bits;
     }
     return adjacent_edges;
 })();
